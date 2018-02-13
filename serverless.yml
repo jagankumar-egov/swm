@@ -56,10 +56,12 @@ resources:
         #KmsKeyId: String
         #LicenseModel: String
 
-        MasterUsername: egov
-        MasterUserPassword: "todo:password"
+        MasterUsername: ${ssm:/${self:service}/dev/rds_user}
+        MasterUserPassword: ${ssm:/${self:service}/dev/rds_password}
+        # TODO: can scope passwords to deployment stage - just need to create them before deploying to that stage
+        #MasterUsername: ${ssm:/${self:service}/${opt:stage, 'dev'}/rds_user}
+        #MasterUserPassword: ${ssm:/${self:service}/${opt:stage, 'dev'}/rds_password}
           ### could pull from ssm parameter store
-          ### ${ssm:/path/to/service/myParam}
 
         #MonitoringInterval: Integer
         #MonitoringRoleArn: String
