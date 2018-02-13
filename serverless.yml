@@ -1,5 +1,5 @@
 
-service: seth-serverless
+service: serverless-java
 
 provider:
   name: aws
@@ -56,7 +56,7 @@ resources:
         #KmsKeyId: String
         #LicenseModel: String
 
-        MasterUsername: ${ssm:/${self:service}/dev/rds_user}
+        MasterUsername: ${ssm:/${self:service}/dev/rds_username}
         MasterUserPassword: ${ssm:/${self:service}/dev/rds_password}
         # TODO: can scope passwords to deployment stage - just need to create them before deploying to that stage
         #MasterUsername: ${ssm:/${self:service}/${opt:stage, 'dev'}/rds_user}

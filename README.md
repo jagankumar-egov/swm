@@ -12,6 +12,11 @@ Requires Java8, Maven, Serverless
 
 [Serverless docs](https://serverless.com/framework/docs/providers/aws/guide/intro/)
 
+One can set the RDS username and password from the aws command line or via the SSM Parameter store aws console
+
+    aws ssm put-parameter --type String --name /serverless-java/dev/rds_username --value rdsusername
+    aws ssm put-parameter --type String --name /serverless-java/dev/rds_password --value rdspassword
+
 ## Build
 
     mvn clean package
@@ -22,12 +27,16 @@ The default deployment stage is dev.
 
     serverless deploy -v
 
-You may want to stand up your own stack under your name.
+You will probably want to create your own stack under your name.
 
     serverless deploy -v -s dev-seth
 
 ## Undeploy (remove)
 
-    serverless remove
-
     serverless remove -s dev-seth
+
+## Test
+
+send a message to a kinesis stream from the command line
+
+     aws kinesis put-record --stream-name serverless-java-dev-seth-TestKinesisStream --data "hello seth" --partition-key 1
