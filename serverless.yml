@@ -1,0 +1,40 @@
+
+service: seth-serverless
+
+provider:
+  name: aws
+  runtime: java8
+# stage: dev
+  region: ap-south-1
+
+# you can define service wide environment variables here
+#  environment:
+#    variable1: value1
+
+package:
+  artifact: target/simplelambdahandler-dev.jar
+
+functions:
+  simplelambdahandler:
+    handler: org.egov.SimpleLambdaHandler
+    events:
+      - stream:
+          type: kinesis
+          arn: { Fn::GetAtt: [ TestKinesisStream, Arn ] }
+          batchSize: 100
+          startingPosition: TRIM_HORIZON
+          # be sure to understand starting position, especially when deploying a new lambda against a pre-existing kinesis stream
+resources:
+  Resources:
+    TestKinesisStream:
+      Type: AWS::Kinesis::Stream
+      Properties:
+        Name: ${self:service}-test-kinesis-stream
+        ShardCount: 1
+  Outputs:
+     TestKinesisStreamARN:
+       Description: "ARN for TestKinesisStream"
+       Value:
+        Fn::GetAtt:
+          - TestKinesisStream
+          - Arn
