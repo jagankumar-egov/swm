@@ -4,7 +4,7 @@
   <groupId>org.egov</groupId>
   <artifactId>simplelambdahandler</artifactId>
   <packaging>jar</packaging>
-  <version>dev</version>
+  <version>1.0.0</version>
   <name>simplelambdahandler</name>
   
   <properties>
