@@ -80,9 +80,15 @@ resources:
         #  - String
 
   Outputs:
-     TestKinesisStreamARN:
-       Description: "ARN for TestKinesisStream"
-       Value:
+    TestKinesisStreamARN:
+      Description: "ARN for TestKinesisStream"
+      Value:
         Fn::GetAtt:
           - TestKinesisStream
           - Arn
+    TestRDSEndpointAddress:
+      Description: "Endpoint.Address"
+      Value: {"Fn::GetAtt": ["TestRDS","Endpoint.Address"]}
+    TestRDSEndpointPort:
+      Description: "Endpoint.Address"
+      Value: {"Fn::GetAtt": ["TestRDS","Endpoint.Port"]}
