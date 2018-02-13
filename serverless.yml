@@ -61,7 +61,6 @@ resources:
         # TODO: can scope passwords to deployment stage - just need to create them before deploying to that stage
         #MasterUsername: ${ssm:/${self:service}/${opt:stage, 'dev'}/rds_user}
         #MasterUserPassword: ${ssm:/${self:service}/${opt:stage, 'dev'}/rds_password}
-          ### could pull from ssm parameter store
 
         #MonitoringInterval: Integer
         #MonitoringRoleArn: String
