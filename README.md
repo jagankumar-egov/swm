@@ -15,7 +15,7 @@ Requires Java8, Maven, Serverless
 You can set the RDS username and password from the aws command line or via the [AWS Console](https://ap-southeast-1.console.aws.amazon.com/systems-manager/parameters?region=ap-southeast-1)
 
     aws ssm put-parameter --type String --name /serverless-java/dev/rds_username --value rdsusername
-    aws ssm put-parameter --type String --name /serverless-java/dev/rds_password --value rdspassword
+    aws ssm put-parameter --type SecureString --name /serverless-java/dev/rds_password --value rdspassword
 
 If you want to use SecureString you'll need to update the serverless.yml file to tell it to decrypt the value with the ~true flag:
 
