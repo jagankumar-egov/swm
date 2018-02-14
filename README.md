@@ -1,6 +1,6 @@
 ## What is this
 
-This project uses Serverless to create a Cloudformation stack containing a Kinesis stream and a Lambda 
+This project uses Serverless to create a Cloudformation stack containing a Kinesis stream and a Lambda
 that is triggered by events on that stream. Resource names are namespaced to the project and deployment stage.
 Standard lambda logging goes to the CloudWatch log group that is automatically created for the Lambda.
 
@@ -23,7 +23,28 @@ If you want to use SecureString you'll need to update the serverless.yml file to
 
 ## Build
 
-    mvn clean package
+### Lambda function
+
+```bash
+$ mvn clean package
+```
+
+### SocketIO Docker Image
+
+This comes from the [DataVoyager](https://gitlab.com/khoslalabs/DataVoyager) repository ([alternate
+link](https://github.com/joelthompson/DataVoyager)). It is stored in Joel's private ECR registry.
+From the socketio-server directory of the DataVoyager repository, execute these commands (updating
+the image repository with your ECR repository, replacing
+`854766835649.dkr.ecr.ap-southeast-1.amazonaws.com/egov-dev/socketio` with your ECR repository as
+appropriate):
+
+1. `$ aws ecr get-login --no-include-email --region ap-southeast-1`
+1. Run the docker login command that was returned in the previous step.
+1. `$ docker build -t egov-dev/socketio .`
+1. After the build completes, tag your image so you can push the image to this repository:
+   `$ docker tag egov-dev/socketio:latest 854766835649.dkr.ecr.ap-southeast-1.amazonaws.com/egov-dev/socketio:latest`
+1. Run the following command to push this image to your ECR repository:
+   `$ docker push 854766835649.dkr.ecr.ap-southeast-1.amazonaws.com/egov-dev/socketio:latest`
 
 ## Deploy
 

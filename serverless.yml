@@ -77,10 +77,14 @@ resources:
         Type: AWS::EC2::VPC::Id
         Description: VPC ID to deploy into
         Default: vpc-904ae1f7 # Joel's test VPC in ap-southeast-1
-      Subnets:
+      NatSubnets:
         Type: List<AWS::EC2::Subnet::Id>
         Description: Subnets for ECS hosts and LBs
         Default: "subnet-3b741872, subnet-6bbec20c, subnet-59cfcc1f" # Nat1C
+      PublicSubnets:
+        Type: List<AWS::EC2::Subnet::Id>
+        Description: Subnets for ALB internet-facing load balancers
+        Default: "subnet-3b791572, subnet-e8b4c88f, subnet-26c1c260"
       Ec2InstanceType:
         Type: String
         Description: What type of instance to use as ECS hosts
@@ -167,35 +171,63 @@ resources:
         Tags:
           - Key: Name
             Value: ${{self:service}}-${{opt:stage, 'dev'}}-ECS-LoadBalancers
-    LoadBalancer:
+    PrivateLoadBalancer:
       Type: AWS::ElasticLoadBalancingV2::LoadBalancer
       Properties:
         Name: ${{self:service}}-${{opt:stage, 'dev'}}-ECS-ALB
-        Subnets: {Ref: Subnets}
+        Subnets: {Ref: NatSubnets}
         SecurityGroups:
           - {Ref: LoadBalancerSG}
         Tags:
           - Key: Name
             Value: ${{self:service}}-${{opt:stage, 'dev'}}-ECS-ALB
-    LoadBalancerListener:
+    PrivateLoadBalancerListener:
       Type: AWS::ElasticLoadBalancingV2::Listener
       Properties:
-        LoadBalancerArn: {Ref: LoadBalancer}
+        LoadBalancerArn: {Ref: PrivateLoadBalancer}
         Port: 80
         Protocol: HTTP
         DefaultActions:
           - Type: forward
-            TargetGroupArn: {Ref: DefaultTargetGroup}
+            TargetGroupArn: {Ref: DefaultPrivateTargetGroup}
+    PublicLoadBalancer:
+      Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+      Properties:
+        Name: ${{self:service}}-${{opt:stage, 'dev'}}-Pub-LB
+        Subnets: {Ref: PublicSubnets}
+        SecurityGroups:
+          - {Ref: LoadBalancerSG}
+        Tags:
+          - Key: Name
+            Value: ${{self:service}}-${{opt:stage, 'dev'}}-ECS-ALB
+    PublicLoadBalancerListener:
+      Type: AWS::ElasticLoadBalancingV2::Listener
+      Properties:
+        LoadBalancerArn: {Ref: PublicLoadBalancer}
+        Port: 3005
+        Protocol: HTTP
+        DefaultActions:
+          - Type: forward
+            TargetGroupArn: {Ref: DefaultPublicTargetGroup}
+
     # We define a default target group here, as this is a mandatory Parameters
     # when creating an Application Load Balancer Listener. This is not used, instead
     # a target group is created per-service in each service template (../services/*)
-    DefaultTargetGroup:
+    DefaultPrivateTargetGroup:
       Type: AWS::ElasticLoadBalancingV2::TargetGroup
       Properties:
-        Name: ${{self:service}}-${{opt:stage, 'dev'}}-ALBTGrp
+        Name: ${{self:service}}-${{opt:stage, 'dev'}}-PrvTGrp
         VpcId: {Ref: VPCId}
         Port: 80
         Protocol: HTTP
+    DefaultPublicTargetGroup:
+      Type: AWS::ElasticLoadBalancingV2::TargetGroup
+      Properties:
+        Name: ${{self:service}}-${{opt:stage, 'dev'}}-PubTGrp
+        VpcId: {Ref: VPCId}
+        Port: 80
+        Protocol: HTTP
+
     ECSCluster:
       Type: AWS::ECS::Cluster
       Properties:
@@ -203,7 +235,7 @@ resources:
     ECSAutoscalingGroup:
       Type: AWS::AutoScaling::AutoScalingGroup
       Properties:
-        VPCZoneIdentifier: {Ref: Subnets}
+        VPCZoneIdentifier: {Ref: NatSubnets}
         LaunchConfigurationName: {Ref: ECSLaunchConfiguration}
         MinSize: {Ref: ClusterSize}
         MaxSize: {Ref: ClusterSize}
@@ -416,6 +448,101 @@ resources:
             Roles:
                 - {Ref: ECSRole}
 
+    SocketIOService:
+      Type: AWS::ECS::Service
+      DependsOn: SocketIOListenerRule
+      Properties:
+        Cluster: { Ref: ECSCluster }
+        Role: { Ref: SocketIOServiceRole }
+        DesiredCount: 1
+        TaskDefinition: { Ref: SocketIOTaskDefinition }
+        LoadBalancers:
+          - ContainerName: socketio
+            ContainerPort: 3005
+            TargetGroupArn: { Ref: SocketIOTargetGroup }
+    SocketIOTaskDefinition:
+      Type: AWS::ECS::TaskDefinition
+      Properties:
+        Family: socketio-service
+        ContainerDefinitions:
+          - Name: socketio
+            Essential: true
+            Image: 854766835649.dkr.ecr.ap-southeast-1.amazonaws.com/egov-dev/socketio:latest
+            Memory: 128
+            PortMappings:
+              - ContainerPort: 3005
+            LogConfiguration:
+              LogDriver: awslogs
+              Options:
+                awslogs-group: "${{self:service}}-${{opt:stage, 'dev'}}-socketio-server-logs"
+                awslogs-region: { Ref: "AWS::Region" }
+    SocketIOLogGroup:
+      Type: AWS::Logs::LogGroup
+      Properties:
+        LogGroupName: "${{self:service}}-${{opt:stage, 'dev'}}-socketio-server-logs"
+        RetentionInDays: 7
+    SocketIOTargetGroup:
+      Type: AWS::ElasticLoadBalancingV2::TargetGroup
+      Properties:
+        VpcId: { Ref: VPCId }
+        Port: 3005
+        Protocol: HTTP
+        Matcher:
+          HttpCode: 400 # ELB can't really health check a web socket
+        HealthCheckIntervalSeconds: 10
+        HealthCheckProtocol: HTTP
+        HealthCheckPath: /socket.io/
+        HealthCheckTimeoutSeconds: 5
+        HealthyThresholdCount: 2
+    SocketIOListenerRule:
+      Type: AWS::ElasticLoadBalancingV2::ListenerRule
+      Properties:
+        ListenerArn: { Ref: PublicLoadBalancerListener }
+        Priority: 2
+        Conditions:
+          - Field: path-pattern
+            Values:
+              - "/socket.io/*"
+        Actions:
+          - TargetGroupArn: { Ref: SocketIOTargetGroup }
+            Type: forward
+    # This IAM Role grants the service access to register/unregister with the 
+    # Application Load Balancer (ALB). It is based on the default documented here:
+    # http://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_IAM_role.html
+    SocketIOServiceRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: "${{self:service}}-${{opt:stage, 'dev'}}-SocketIO-Role"
+        Path: "/"
+        AssumeRolePolicyDocument:  |
+          {
+              "Statement": [{
+                  "Effect": "Allow",
+                  "Principal": { "Service": [ "ecs.amazonaws.com" ]},
+                  "Action": [ "sts:AssumeRole" ]
+              }]
+          }
+        Policies:
+          - PolicyName: socketio-ecs
+            PolicyDocument: >
+              {
+                "Version": "2012-10-17",
+                "Statement": [{
+                        "Effect": "Allow",
+                        "Action": [
+                            "ec2:AuthorizeSecurityGroupIngress",
+                            "ec2:Describe*",
+                            "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                            "elasticloadbalancing:Describe*",
+                            "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                            "elasticloadbalancing:DeregisterTargets",
+                            "elasticloadbalancing:DescribeTargetGroups",
+                            "elasticloadbalancing:DescribeTargetHealth",
+                            "elasticloadbalancing:RegisterTargets"
+                        ],
+                        "Resource": "*"
+                }]
+              }
   Outputs:
     TestKinesisStreamARN:
       Description: "ARN for TestKinesisStream"
@@ -423,6 +550,12 @@ resources:
         Fn::GetAtt:
           - TestKinesisStream
           - Arn
+    SocketIOUrl:
+      Description: "URL For SocketIO server"
+      Value:
+        Fn::Join:
+          - ":"
+          - [ {Fn::GetAtt: ["PublicLoadBalancer", "DNSName"]}, "3005" ]
     TestRDSEndpointAddress:
       Description: "Endpoint.Address"
       Value: {"Fn::GetAtt": ["TestRDS","Endpoint.Address"]}
