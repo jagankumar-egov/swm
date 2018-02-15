@@ -521,7 +521,7 @@ resources:
     SocketIOTaskDefinition:
       Type: AWS::ECS::TaskDefinition
       Properties:
-        Family: socketio-service
+        Family: "${{self:service}}-${{opt:stage, 'dev'}}-socketio-service"
         ContainerDefinitions:
           - Name: socketio
             Essential: true
@@ -624,7 +624,7 @@ resources:
     AdminUITaskDefinition:
       Type: AWS::ECS::TaskDefinition
       Properties:
-        Family: swm-admin
+        Family: "${{self:service}}-${{opt:stage, 'dev'}}-swm-admin"
         ContainerDefinitions:
           - Name: swm-admin
             Essential: true
