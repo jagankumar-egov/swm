@@ -69,7 +69,15 @@ Note that due to API Gateway naming conventions, the stage name must be alphanum
 
 ## Test
 
-Send a message to a kinesis stream from the command line:
+These should be picked up by a lambda function and logged to
+[CloudWatch](https://ap-southeast-1.console.aws.amazon.com/cloudwatch/home?region=ap-southeast-1#logs:)
+and then make their way to your admin UI which you can see via Chrome developer tools
+
+
+
+### Directly to Kinesis
+
+This will send a message to the kinesis stream from the command line:
 
 ```bash
 $ aws kinesis put-record --stream-name <stream_name> --partition-key 1 --data '{
@@ -87,12 +95,70 @@ $ aws kinesis put-record --stream-name <stream_name> --partition-key 1 --data '{
   "mocked": false,
   "timestamp": 1518584082935
 }'
-
 ```
 
-This should be picked up by the lambda function and logged to [CloudWatch](https://ap-southeast-1.console.aws.amazon.com/cloudwatch/home?region=ap-southeast-1#logs:)
-and then make its way to your admin UI which you can see via Chrome developer tools
+### Via API Gateway
 
+_Note that only the first method works properly (methods 2 and 3 appear to have a bug in the JSON
+encoding causing the admin UI to be unable to deserialize it)._
+
+
+There are currently three API gateway ingest points set up:
+
+1. API Gateway to Kinesis. To test this, run a command like:
+```bash
+$ curl -X POST https://<gateway_host>.execute-api.ap-southeast-1.amazonaws.com/<stage_name>/swm-ingest -H "Content-Type: application/json" -d '{
+  "vehicleNo":"213",
+  "routeCode":"abc",
+  "BatteryInfo":{},
+  "coords":  {
+    "accuracy": 9.64799976348877,
+    "altitude": 815.634765625,
+    "heading": 0,
+    "latitude": 12.9137821,
+    "longitude": 77.6402731,
+    "speed": 0
+  },
+  "mocked": false,
+  "timestamp": 1518584085000
+}'
+```
+1. API Gateway to lamba to Kinesis. To test this, run a command like:
+```bash
+$ curl -X POST https://lq5hyy4kua.execute-api.ap-southeast-1.amazonaws.com/devjoel/apikinesis -H "Content-Type: application/json" -d '{
+  "vehicleNo":"213",
+  "routeCode":"abc",
+  "BatteryInfo":{},
+  "coords":  {
+    "accuracy": 9.64799976348877,
+    "altitude": 815.634765625,
+    "heading": 0,
+    "latitude": 12.9137821,
+    "longitude": 77.6402731,
+    "speed": 0
+  },
+  "mocked": false,
+  "timestamp": 1518584085000
+}'
+```
+1. API Gateway to lambda directly. To test this, run a command like:
+```bash
+$ curl -X POST https://lq5hyy4kua.execute-api.ap-southeast-1.amazonaws.com/devjoel/direct -H "Content-Type: application/json" -d '{
+  "vehicleNo":"213",
+  "routeCode":"abc",
+  "BatteryInfo":{},
+  "coords":  {
+    "accuracy": 9.64799976348877,
+    "altitude": 815.634765625,
+    "heading": 0,
+    "latitude": 12.9137821,
+    "longitude": 77.6402731,
+    "speed": 0
+  },
+  "mocked": false,
+  "timestamp": 1518584085000
+}'
+```
 
 ## Errata
 

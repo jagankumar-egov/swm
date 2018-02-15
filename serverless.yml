@@ -146,6 +146,88 @@ resources:
         Name: ${{self:service}}-${{opt:stage, 'dev'}}-TestKinesisStream
         ShardCount: 1
 
+    ApiGatewayToKinesis:
+      Type: AWS::ApiGateway::Method
+      Properties:
+        ApiKeyRequired: false # todo: lock this down
+        AuthorizationType: NONE # todo : lock this down
+        HttpMethod: POST
+        Integration:
+          Type: AWS #signal that we want to use an internal AWS service
+          Credentials:
+            Fn::GetAtt: [ ApiGatewayToKinesisRole, Arn ] #role for the API to talk to Kinesis
+          Uri:
+            Fn::Join:
+              - ""
+              - - "arn:aws:apigateway:"
+                - Ref: AWS::Region
+                - ":kinesis:action/PutRecord" #this URI basically describes the service and action I want to invoke.
+          IntegrationHttpMethod: POST #for kinesis using POST is required
+          RequestTemplates:
+            application/json: #now the mapping template for an incoming JSON
+              Fn::Join:
+                - ""
+                - - "#set( $key = $context.identity.apiKey )\n" #assign the API key to local variable
+                  - "#set( $keyname = \"apiKey\" )\n"
+                  - "#set( $traceidval = $input.params().get(\"header\").get(\"X-Amzn-Trace-Id\"))" #get the trace id to later extract a timestamp of the incoming request
+                  - "#set( $traceid = \"traceid\")\n"
+                  - "#set( $body = $input.body )\n" #assign the request payload to variable
+                  - "#set( $b64 = $util.base64Encode(\"$body\") )\n"
+                  #now encode the payload in base64 to form a valid Kinesis request
+                  - "{\n" #begin of the Kinesis PutRequest Json
+                  - "\"Data\": \"$b64\",\n"
+                  - "\"PartitionKey\": \"1\",\n" # todo PartitionKey
+                  - "\"StreamName\": \""
+                  - ${{self:resources.Resources.TestKinesisStream.Properties.Name}}
+                  - "\"\n}" #end of the Kinesis PutRequest json
+          RequestParameters: #Kinesis requires the content type to not be json, but amz-json
+            integration.request.header.Content-Type: "'application/x-amz-json-1.1'"
+          IntegrationResponses:
+            - StatusCode: 200 #create a default response for the caller
+              ResponseTemplates:
+                application/json: '{"status":"OK"}'
+        MethodResponses:
+          - StatusCode: 200
+        ResourceId: { Ref: ApiGatewayToKinesisResource }
+        RestApiId: { Ref: ApiGatewayRestApi }
+
+    ApiGatewayToKinesisResource:
+      Type: AWS::ApiGateway::Resource
+      Properties:
+        ParentId: {Fn::GetAtt: ["ApiGatewayRestApi", "RootResourceId"]}
+        PathPart: "swm-ingest"
+        RestApiId: { Ref: "ApiGatewayRestApi" }
+
+    ApiGatewayToKinesisRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - apigateway.amazonaws.com
+            Action:
+            - sts:AssumeRole
+        Path: "/"
+        Policies:
+          - PolicyName: ApiGatewayToKinesisRolePolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+              - Effect: Allow
+                Action:
+                  - "kinesis:PutRecord"
+                Resource:
+                  - 'Fn::Join':
+                    - ':'
+                    -
+                      - 'arn:aws:kinesis'
+                      - Ref: 'AWS::Region'
+                      - Ref: 'AWS::AccountId'
+                      - 'stream/${{self:resources.Resources.TestKinesisStream.Properties.Name}}'
+
     TestRDS:
       Type: "AWS::RDS::DBInstance"
       Properties:
