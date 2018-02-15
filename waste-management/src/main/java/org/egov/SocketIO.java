@@ -81,6 +81,8 @@ public class SocketIO {
         }
 
     });
-    socket.connect();}
+    socket.connect();
+    
+	}
 
 }
