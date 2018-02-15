@@ -15,7 +15,7 @@ import drop from '../../../assets/images/drop/drop.png';
 import drop2x from '../../../assets/images/drop/drop@2x.png';
 import drop3x from '../../../assets/images/drop/drop@3x.png';
 
-const { compose, withProps, lifecycle ,withStateHandlers} = require("recompose");
+const { compose, withProps, lifecycle ,withStateHandlers,withPropsOnChange} = require("recompose");
 const {
   withScriptjs,
   withGoogleMap,
@@ -40,19 +40,30 @@ const getPixelPositionOffset = (width, height) => ({
 
 let gMap;
 
+// const withExtendedProps = withPropsOnChange(
+//   (props, nextProps) => {
+//     debugger;
+//     return nextProps.count % 2 === 0
+//   },
+//   (props) => ({
+//     specialProp : props.count,
+//   })
+// )
+
 const car = "M17.402,0H5.643C2.526,0,0,3.467,0,6.584v34.804c0,3.116,2.526,5.644,5.643,5.644h11.759c3.116,0,5.644-2.527,5.644-5.644 V6.584C23.044,3.467,20.518,0,17.402,0z M22.057,14.188v11.665l-2.729,0.351v-4.806L22.057,14.188z M20.625,10.773 c-1.016,3.9-2.219,8.51-2.219,8.51H4.638l-2.222-8.51C2.417,10.773,11.3,7.755,20.625,10.773z M3.748,21.713v4.492l-2.73-0.349 V14.502L3.748,21.713z M1.018,37.938V27.579l2.73,0.343v8.196L1.018,37.938z M2.575,40.882l2.218-3.336h13.771l2.219,3.336H2.575z M19.328,35.805v-7.872l2.729-0.355v10.048L19.328,35.805z";
 export const MapWithDirectionsRenderer = compose(
-  withProps({
-    googleMapURL: "https://maps.googleapis.com/maps/api/js?key=AIzaSyBN01pR2wGavj2_q3v4-vFgQzmcx-gllk0&v=3.exp&libraries=geometry,drawing,places",
+  withProps(props=>{
+    return {googleMapURL: "https://maps.googleapis.com/maps/api/js?key=AIzaSyBN01pR2wGavj2_q3v4-vFgQzmcx-gllk0&v=3.exp&libraries=geometry,drawing,places",
     loadingElement: <div style={{ height: `100%` }} />,
     containerElement: <div style={{ height: `100%`, minWidth: `300px` }} />,
-    mapElement: <div style={{ height: `100%` }} />
+    mapElement: <div style={{ height: `100%` }} />,
+    props}
   }),
   withScriptjs,
   withGoogleMap,
   withStateHandlers(() => ({
     isOpen: false,
-  }), {
+    }), {
     onToggleOpen: ({ isOpen }) => () => ({
       isOpen: !isOpen,
     })

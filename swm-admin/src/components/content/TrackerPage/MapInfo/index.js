@@ -21,24 +21,24 @@ class MapsInfo extends Component {
 	}
 
 	initializeMap(props) {
-		if(props.vehicleLocations) {
-			this.setState({
-				vehicleLocations: props.vehicleLocations,
-				routes: props.routes,
-				userLocation:props.userLocation
-			})
-		}
+		// if(props.vehicleLocations) {
+		// 	this.setState({
+		// 		vehicleLocations: props.vehicleLocations,
+		// 		routes: props.routes,
+		// 		userLocation:props.userLocation
+		// 	})
+		// }
 	}
 
 	componentWillReceiveProps(nextProps) {
-		if(!_.isEqual(this.props, nextProps)) {
-			this.initializeMap(nextProps);
-		}
+		// if(!_.isEqual(this.props, nextProps)) {
+		// 	this.initializeMap(nextProps);
+		// }
 	}
 
 	render() {
-		const {vehicleLocations, eta,routes,userLocation } = this.state;
-		const { refresh, t, availWidth } = this.props;
+		const {eta} = this.state;
+		const { refresh, t, availWidth ,vehicleLocations, routes, userLocation} = this.props;
 		return (
 			<div className="map-box">
 				{/*<a className="refresh-btn btn-floating btn-large waves-effect waves-light lightBlack" href="javascript:void(0)" onClick={refresh}>

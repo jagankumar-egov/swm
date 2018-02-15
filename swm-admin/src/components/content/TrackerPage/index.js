@@ -276,6 +276,7 @@ class Tracker extends Component {
         }
       }
       console.log(appData.vehicleLocations);
+      
       self.setState({
         ...state,
         appData: appData
@@ -297,11 +298,11 @@ class Tracker extends Component {
             className="flex-container"
             style={{ overflowY: availWidth >= 767 ? "hidden" : "auto" }}
           >
-            <MapsInfo
+            {appData && <MapsInfo
               {...appData}
               refresh={initialize}
               availWidth={availWidth}
-            />
+            />}
           </div>
         ) : (
           <Page_404 availWidth={availWidth} />
