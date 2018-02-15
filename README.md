@@ -31,11 +31,11 @@ $ mvn clean package
 
 ### SocketIO Docker Image
 
-This comes from the [swm](https://github.com/egovernments/swm) repository. It is stored in Joel's
-private ECR registry.  From the socketio-server directory of the swm repository, execute
-these commands (updating the image repository with your ECR repository, replacing
-`854766835649.dkr.ecr.ap-southeast-1.amazonaws.com/egov-dev/socketio` with your ECR repository as
-appropriate):
+This comes from the [swm](https://github.com/egovernments/swm) repository in the `socketio-server`
+folder. The docker image is stored in Joel's private ECR registry.  From the socketio-server
+directory of the swm repository, execute these commands (updating the image repository with your ECR
+repository, replacing `854766835649.dkr.ecr.ap-southeast-1.amazonaws.com/egov-dev/socketio` with
+your ECR repository as appropriate):
 
 1. `$ aws ecr get-login --no-include-email --region ap-southeast-1`
 1. Run the docker login command that was returned in the previous step.
@@ -47,9 +47,8 @@ appropriate):
 
 ### AdminUI Docker Image
 
-This comes from the [swm-admin](https://github.com/muralim4242/swm-admin) repository (should soon be
-integrated into the [main eGov SWM repository](https://github.com/egovernments/swm/)). Follow the
-same steps as above, but replace `socketio` with `swm-admin`.
+This comes from the [swm](https://github.com/egovernments/swm) repository, in the `swm-admin`
+folder.  Follow the same steps as above, but replace `socketio` with `swm-admin`.
 
 ## Deploy
 
@@ -67,11 +66,29 @@ You will probably want to create your own stack under your name.
 
 ## Test
 
-send a message to a kinesis stream from the command line
+Send a message to a kinesis stream from the command line:
 
-     aws kinesis put-record --stream-name serverless-java-dev-seth-TestKinesisStream --data "hello seth" --partition-key 1
+```bash
+$ aws kinesis put-record --stream-name <stream_name> --partition-key 1 --data '{
+  "vehicleNo":"123",
+  "routeCode":"abc",
+  "BatteryInfo":{},
+  "coords":  {
+    "accuracy": 9.64799976348877,
+    "altitude": 815.634765625,
+    "heading": 0,
+    "latitude": 12.9187821,
+    "longitude": 77.6702731,
+    "speed": 0
+  },
+  "mocked": false,
+  "timestamp": 1518584082935
+}'
+
+```
 
 This should be picked up by the lambda function and logged to [CloudWatch](https://ap-southeast-1.console.aws.amazon.com/cloudwatch/home?region=ap-southeast-1#logs:)
+and then make its way to your admin UI which you can see via Chrome developer tools
 
 
 ## Errata
