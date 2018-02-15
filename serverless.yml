@@ -66,8 +66,8 @@ functions:
       RDS_DBNAME: ${{self:resources.Resources.TestRDS.Properties.DBName}}
       SOCKETIO_SERVER:
         Fn::Join:
-          - "://"
-          - [ "http", { Fn::Join: [ ":",  [ {Fn::GetAtt: ["PublicLoadBalancer", "DNSName"]}, "3005/location" ] ] } ]
+          - "/"
+          - [ "http:/", { Fn::GetAtt: ["PublicLoadBalancer", "DNSName"]}, "location" ]
     events:
       - stream:
           type: kinesis
@@ -258,7 +258,7 @@ resources:
       Type: AWS::ElasticLoadBalancingV2::Listener
       Properties:
         LoadBalancerArn: {Ref: PublicLoadBalancer}
-        Port: 3005
+        Port: 80
         Protocol: HTTP
         DefaultActions:
           - Type: forward
@@ -502,6 +502,9 @@ resources:
             Roles:
                 - {Ref: ECSRole}
 
+##########################################################
+#             BEGIN SocketIO Service Definition          #
+##########################################################
     SocketIOService:
       Type: AWS::ECS::Service
       DependsOn: SocketIOListenerRule
@@ -552,7 +555,7 @@ resources:
       Type: AWS::ElasticLoadBalancingV2::ListenerRule
       Properties:
         ListenerArn: { Ref: PublicLoadBalancerListener }
-        Priority: 2
+        Priority: 1
         Conditions:
           - Field: path-pattern
             Values:
@@ -560,7 +563,7 @@ resources:
         Actions:
           - TargetGroupArn: { Ref: SocketIOTargetGroup }
             Type: forward
-    # This IAM Role grants the service access to register/unregister with the 
+    # This IAM Role grants the service access to register/unregister with the
     # Application Load Balancer (ALB). It is based on the default documented here:
     # http://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_IAM_role.html
     SocketIOServiceRole:
@@ -597,6 +600,120 @@ resources:
                         "Resource": "*"
                 }]
               }
+##########################################################
+#              END SocketIO Service Definition           #
+##########################################################
+
+##########################################################
+#              BEGIN AdminUI Service Definition          #
+##########################################################
+# TODO: Parameterize this more, WAAY too much duplication
+    AdminUIService:
+      Type: AWS::ECS::Service
+      DependsOn: AdminUIListenerRule
+      Properties:
+        Cluster: { Ref: ECSCluster }
+        Role: { Ref: AdminUIServiceRole }
+        DesiredCount: 1
+        TaskDefinition: { Ref: AdminUITaskDefinition }
+        LoadBalancers:
+          - ContainerName: swm-admin
+            ContainerPort: 3000
+            TargetGroupArn: { Ref: AdminUITargetGroup }
+    AdminUITaskDefinition:
+      Type: AWS::ECS::TaskDefinition
+      Properties:
+        Family: swm-admin
+        ContainerDefinitions:
+          - Name: swm-admin
+            Essential: true
+            Environment:
+              - Name: SOCKETIO_SERVER
+                Value:
+                  Fn::Join:
+                    - "/"
+                    - [ "http:/", { Fn::GetAtt: ["PublicLoadBalancer", "DNSName"]}, "location" ]
+            Image: 854766835649.dkr.ecr.ap-southeast-1.amazonaws.com/egov-dev/swm-admin:latest
+            Memory: 512
+            PortMappings:
+              - ContainerPort: 3000
+            LogConfiguration:
+              LogDriver: awslogs
+              Options:
+                awslogs-group: "${{self:service}}-${{opt:stage, 'dev'}}-swm-admin-server-logs"
+                awslogs-region: { Ref: "AWS::Region" }
+    AdminUILogGroup:
+      Type: AWS::Logs::LogGroup
+      Properties:
+        LogGroupName: "${{self:service}}-${{opt:stage, 'dev'}}-swm-admin-server-logs"
+        RetentionInDays: 7
+    AdminUITargetGroup:
+      Type: AWS::ElasticLoadBalancingV2::TargetGroup
+      Properties:
+        VpcId: "${{self:custom.VPCId}}"
+        Port: 3000
+        Protocol: HTTP
+        Matcher:
+          HttpCode: 200
+        HealthCheckIntervalSeconds: 10
+        HealthCheckProtocol: HTTP
+        HealthCheckPath: "/#/12345"
+        HealthCheckTimeoutSeconds: 5
+        HealthyThresholdCount: 2
+        UnhealthyThresholdCount: 3
+    AdminUIListenerRule:
+      Type: AWS::ElasticLoadBalancingV2::ListenerRule
+      Properties:
+        ListenerArn: { Ref: PublicLoadBalancerListener }
+        Priority: 2
+        Conditions:
+          - Field: path-pattern
+            Values:
+              - "/*"
+        Actions:
+          - TargetGroupArn: { Ref: AdminUITargetGroup }
+            Type: forward
+    # This IAM Role grants the service access to register/unregister with the
+    # Application Load Balancer (ALB). It is based on the default documented here:
+    # http://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_IAM_role.html
+    AdminUIServiceRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: "${{self:service}}-${{opt:stage, 'dev'}}-AdminUI-Role"
+        Path: "/"
+        AssumeRolePolicyDocument:  |
+          {
+              "Statement": [{
+                  "Effect": "Allow",
+                  "Principal": { "Service": [ "ecs.amazonaws.com" ]},
+                  "Action": [ "sts:AssumeRole" ]
+              }]
+          }
+        Policies:
+          - PolicyName: adminui-ecs
+            PolicyDocument: >
+              {
+                "Version": "2012-10-17",
+                "Statement": [{
+                        "Effect": "Allow",
+                        "Action": [
+                            "ec2:AuthorizeSecurityGroupIngress",
+                            "ec2:Describe*",
+                            "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                            "elasticloadbalancing:Describe*",
+                            "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                            "elasticloadbalancing:DeregisterTargets",
+                            "elasticloadbalancing:DescribeTargetGroups",
+                            "elasticloadbalancing:DescribeTargetHealth",
+                            "elasticloadbalancing:RegisterTargets"
+                        ],
+                        "Resource": "*"
+                }]
+              }
+##########################################################
+#               END AdminUI Service Definition           #
+##########################################################
+
   Outputs:
     TestKinesisStreamARN:
       Description: "ARN for TestKinesisStream"
@@ -606,10 +723,7 @@ resources:
           - Arn
     SocketIOUrl:
       Description: "URL For SocketIO server"
-      Value:
-        Fn::Join:
-          - ":"
-          - [ {Fn::GetAtt: ["PublicLoadBalancer", "DNSName"]}, "3005" ]
+      Value: {Fn::GetAtt: ["PublicLoadBalancer", "DNSName"]}
     TestRDSEndpointAddress:
       Description: "Endpoint.Address"
       Value: {"Fn::GetAtt": ["TestRDS","Endpoint.Address"]}

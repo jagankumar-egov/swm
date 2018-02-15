@@ -31,10 +31,9 @@ $ mvn clean package
 
 ### SocketIO Docker Image
 
-This comes from the [DataVoyager](https://gitlab.com/khoslalabs/DataVoyager) repository ([alternate
-link](https://github.com/joelthompson/DataVoyager)). It is stored in Joel's private ECR registry.
-From the socketio-server directory of the DataVoyager repository, execute these commands (updating
-the image repository with your ECR repository, replacing
+This comes from the [swm](https://github.com/egovernments/swm) repository. It is stored in Joel's
+private ECR registry.  From the socketio-server directory of the swm repository, execute
+these commands (updating the image repository with your ECR repository, replacing
 `854766835649.dkr.ecr.ap-southeast-1.amazonaws.com/egov-dev/socketio` with your ECR repository as
 appropriate):
 
@@ -45,6 +44,12 @@ appropriate):
    `$ docker tag egov-dev/socketio:latest 854766835649.dkr.ecr.ap-southeast-1.amazonaws.com/egov-dev/socketio:latest`
 1. Run the following command to push this image to your ECR repository:
    `$ docker push 854766835649.dkr.ecr.ap-southeast-1.amazonaws.com/egov-dev/socketio:latest`
+
+### AdminUI Docker Image
+
+This comes from the [swm-admin](https://github.com/muralim4242/swm-admin) repository (should soon be
+integrated into the [main eGov SWM repository](https://github.com/egovernments/swm/)). Follow the
+same steps as above, but replace `socketio` with `swm-admin`.
 
 ## Deploy
 
