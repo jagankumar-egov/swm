@@ -1,4 +1,4 @@
-package org.egov;
+package org.egov.wm.service;
 
 import org.json.JSONException;
 import org.slf4j.Logger;
@@ -12,7 +12,7 @@ import io.socket.emitter.Emitter;
 @Service
 public class SocketIO {
 	
-	public static final Logger logger = LoggerFactory.getLogger(Processor.class);
+	public static final Logger logger = LoggerFactory.getLogger(SocketIO.class);
 
 	@Value("${socket.io.host}")
 	private String socketHost;
@@ -21,10 +21,12 @@ public class SocketIO {
 	private String socketRoom;
 	
 	public void pushToSocketIO(String key, String value) throws Exception {    
-		
 		logger.info("Pushing to SocketIO.....");
 		
-		final io.socket.client.Socket socket = IO.socket(socketHost);
+		IO.Options opts = new IO.Options();
+		opts.forceNew = true;
+		opts.reconnection = true;
+		final io.socket.client.Socket socket = IO.socket(socketHost, opts);
         socket.on(io.socket.client.Socket.EVENT_CONNECT, new Emitter.Listener() {
         @Override
         public void call(Object... args) {

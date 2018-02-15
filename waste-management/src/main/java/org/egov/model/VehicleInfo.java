@@ -1,7 +1,6 @@
-package org.egov;
+package org.egov.model;
 
 import java.util.UUID;
-
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

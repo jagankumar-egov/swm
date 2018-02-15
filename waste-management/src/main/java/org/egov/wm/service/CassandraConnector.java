@@ -1,8 +1,10 @@
-package org.egov;
+package org.egov.wm.service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.egov.model.Test;
+import org.egov.model.VehicleInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

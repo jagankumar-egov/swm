@@ -1,4 +1,4 @@
-package org.egov;
+package org.egov.model;
 
 public class BatteryInfo {
 	
