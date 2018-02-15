@@ -6,7 +6,7 @@ echo "Started db container: $db"
 
 pwd=`pwd`
 ls -ltr /var/lib/
-ci=`sudo docker run -d -v $pwd:/var/lib/egov-services:rw -w /var/lib/egov-services --net=container:${db} ${ci_image} /bin/bash -c "cd $1; mvn clean verify package"`
+ci=`sudo docker run -d -v $pwd:/var/lib/egov-services:rw -w /var/lib/egov-services --net=container:${db} ${ci_image} /bin/bash -c "cd $1; mvn clean verify package -s /var/lib/egov-services/settings.xml"`
 echo "Started ci container to run build: $ci"
 
 echo "Attaching to ci container: $ci"
