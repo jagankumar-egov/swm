@@ -319,6 +319,7 @@ resources:
       Properties:
         ImageId:  {Fn::FindInMap: [AWSRegionToAMI, {Ref: "AWS::Region"}, AMI]}
         InstanceType: "${{self:custom.Ec2InstanceType}}"
+        # KeyName: '' # insert your keypair name for debugging
         SecurityGroups:
           - {Ref: EcsHostSG}
         IamInstanceProfile: {Ref: ECSInstanceProfile}
@@ -628,7 +629,9 @@ resources:
           - Name: swm-admin
             Essential: true
             Environment:
-              - Name: SOCKETIO_SERVER
+              # Note that, per https://github.com/facebook/create-react-app/issues/102, the
+              # environment variable MUST start with REACT_APP_ to get made available to the apps.
+              - Name: REACT_APP_SOCKETIO_SERVER
                 Value:
                   Fn::Join:
                     - "/"
