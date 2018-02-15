@@ -1,6 +1,5 @@
 package org.egov;
 
-import java.nio.charset.Charset;
 import java.util.logging.Logger;
 
 import com.amazonaws.services.lambda.runtime.Context;
@@ -11,16 +10,12 @@ public class SimpleLambdaHandler implements RequestHandler<KinesisEvent, Boolean
 
 	private static final Logger LOG = Logger.getLogger(String.valueOf(SimpleLambdaHandler.class));
 
+	private static KinesisEventHandler _eventHandler = new VehicleKinesisEventHandler();
+
 	@Override
 	public Boolean handleRequest(KinesisEvent event, Context context) {
 		LOG.info("received: " + event);
-		event.getRecords().forEach(this::handleKinesisEvent);
-		return true;
+		return _eventHandler.handleEvent(event);
 	}
 
-	private void handleKinesisEvent(KinesisEvent.KinesisEventRecord kinesisEventRecord) {
-        byte[] byteArray = kinesisEventRecord.getKinesis().getData().array();
-        String message = new String(byteArray, Charset.forName("UTF-8"));
-        LOG.info(message);
-	}
 }

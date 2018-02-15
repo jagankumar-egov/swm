@@ -4,21 +4,70 @@ service: serverless-java
 provider:
   name: aws
   runtime: java8
+  timeout: 20 # optional, in seconds, default is 6
   region: ap-southeast-1
   # needed to not confuse serverless' variable syntax with CFN's
   # see https://serverless.com/framework/docs/providers/aws/guide/variables/#using-custom-variable-syntax
   variableSyntax: "\\${{([ ~:a-zA-Z0-9._\\'\",\\-\\/\\(\\)]+?)}}"
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - "ssm:GetParameter"
+        - "ssm:GetParameters"
+      Resource: "arn:aws:ssm:${{self:provider.region}}:*:parameter/${{self:service}}/*"
+                # for some reason, getting more specific than this results in fail
+                # "arn:aws:ssm:${{self:provider.region}}:*:parameter//${{self:service}}/${{opt:stage, 'dev'}}/*"
+    - Effect: Allow
+      Action:
+        - "ec2:CreateNetworkInterface"
+        - "ec2:DescribeNetworkInterfaces"
+        - "ec2:DeleteNetworkInterface"
+        - "logs:CreateLogGroup"
+        - "logs:CreateLogStream"
+        - "logs:PutLogEvents"
+      Resource: "*"
 
 # you can define service wide environment variables here
 #  environment:
 #    variable1: value1
 
+custom:
+  VPCId: vpc-904ae1f7 # Joel's test VPC in ap-southeast-1 # TODO: update these accordingly
+  NatSubnets:
+    - subnet-3b741872
+    - subnet-6bbec20c
+    - subnet-59cfcc1f
+  PrivateSubnets:
+    - subnet-8a761ac3
+    - subnet-a0bbc7c7
+    - subnet-6c3d3e2a
+  PublicSubnets:
+    - subnet-3b791572
+    - subnet-e8b4c88f
+    - subnet-26c1c260
+  LambdaSecurityGroupIds:
+    - sg-4ed21c37
+  Ec2InstanceType: "t2.large"
+  ClusterSize: "3"
 package:
   artifact: target/simplelambdahandler-1.0.0.jar
 
 functions:
   simplelambdahandler:
     handler: org.egov.SimpleLambdaHandler
+    vpc:
+      securityGroupIds: ${{self:custom.LambdaSecurityGroupIds}}
+      subnetIds: ${{self:custom.NatSubnets}}
+    environment:
+      RDS_ENDPOINT: {"Fn::GetAtt": ["TestRDS","Endpoint.Address"]}
+      RDS_PORT: {"Fn::GetAtt": ["TestRDS","Endpoint.Port"]}
+      RDS_USERNAME_PARAMETER: /${{self:service}}/${{opt:stage, 'dev'}}/rds_username
+      RDS_PASSWORD_PARAMETER: /${{self:service}}/${{opt:stage, 'dev'}}/rds_password
+      RDS_DBNAME: ${{self:resources.Resources.TestRDS.Properties.DBName}}
+      SOCKETIO_SERVER:
+        Fn::Join:
+          - "://"
+          - [ "http", { Fn::Join: [ ":",  [ {Fn::GetAtt: ["PublicLoadBalancer", "DNSName"]}, "3005/location" ] ] } ]
     events:
       - stream:
           type: kinesis
@@ -72,27 +121,6 @@ resources:
             AMI: ami-00491f6f
         sa-east-1:
             AMI: ami-af521fc3
-  Parameters:
-      VPCId:
-        Type: AWS::EC2::VPC::Id
-        Description: VPC ID to deploy into
-        Default: vpc-904ae1f7 # Joel's test VPC in ap-southeast-1
-      NatSubnets:
-        Type: List<AWS::EC2::Subnet::Id>
-        Description: Subnets for ECS hosts and LBs
-        Default: "subnet-3b741872, subnet-6bbec20c, subnet-59cfcc1f" # Nat1C
-      PublicSubnets:
-        Type: List<AWS::EC2::Subnet::Id>
-        Description: Subnets for ALB internet-facing load balancers
-        Default: "subnet-3b791572, subnet-e8b4c88f, subnet-26c1c260"
-      Ec2InstanceType:
-        Type: String
-        Description: What type of instance to use as ECS hosts
-        Default: t2.large
-      ClusterSize:
-        Type: Number
-        Description: How many ECS hosts to initially spin up
-        Default: "3"
   Resources:
     TestKinesisStream:
       Type: AWS::Kinesis::Stream
@@ -118,20 +146,15 @@ resources:
         #DBSecurityGroups:
         #  - String
         #DBSnapshotIdentifier: String
-        #DBSubnetGroupName: String
+        DBSubnetGroupName: ${{self:resources.Resources.RDSSubnetGroup.Properties.DBSubnetGroupName}}
         Engine: postgres
         #EngineVersion: 9.6
         #Iops: Number
         #KmsKeyId: String
         #LicenseModel: String
-
         MasterUsername: ${{ssm:/${{self:service}}/${{opt:stage, 'dev'}}/rds_username}}
         # WARNING: This embeds the password into the template in plain text!
         MasterUserPassword: ${{ssm:/${{self:service}}/${{opt:stage, 'dev'}}/rds_password~true}}
-        # TODO: can scope passwords to deployment stage - just need to create them before deploying to that stage
-        #MasterUsername: ${ssm:/${self:service}/${opt:stage, 'dev'}/rds_user}
-        #MasterUserPassword: ${ssm:/${self:service}/${opt:stage, 'dev'}/rds_password}
-
         #MonitoringInterval: Integer
         #MonitoringRoleArn: String
         #MultiAZ: Boolean
@@ -147,12 +170,43 @@ resources:
         #Tags:
         #  Resource Tag
         #Timezone: String
-        #VPCSecurityGroups:
-        #  - String
+        VPCSecurityGroups:
+          - {Ref: RDSSG}
+        ### If you set VPCSecurityGroups, you must not set DBSecurityGroups, and vice versa.
+
+    LambdaSG:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        VpcId: "${{self:custom.VPCId}}"
+        GroupDescription: SG for Lambdas
+        SecurityGroupIngress: []
+        Tags:
+          - Key: Name
+            Value: ${{self:service}}-${{opt:stage, 'dev'}}-Lambdas
+    RDSSubnetGroup:
+      Type: AWS::RDS::DBSubnetGroup
+      Properties:
+        DBSubnetGroupDescription: DBSubnetGroup for RDS
+        DBSubnetGroupName: ${{self:service}}-${{opt:stage, 'dev'}}-DBSubnetGroup
+        SubnetIds: "${{self:custom.PrivateSubnets}}"
+        Tags:
+          - Key: Name
+            Value: ${{self:service}}-${{opt:stage, 'dev'}}-DBSubnetGroup
+    RDSSG:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        VpcId: "${{self:custom.VPCId}}"
+        GroupDescription: SG for RDS
+        SecurityGroupIngress:
+          - CidrIp: 0.0.0.0/0
+            IpProtocol: -1
+        Tags:
+          - Key: Name
+            Value: ${{self:service}}-${{opt:stage, 'dev'}}-RDS
     EcsHostSG:
       Type: AWS::EC2::SecurityGroup
       Properties:
-        VpcId: {Ref: VPCId}
+        VpcId: "${{self:custom.VPCId}}"
         GroupDescription: SG for ECS hosts
         SecurityGroupIngress:
           - SourceSecurityGroupId: {Ref: LoadBalancerSG}
@@ -163,7 +217,7 @@ resources:
     LoadBalancerSG:
       Type: AWS::EC2::SecurityGroup
       Properties:
-        VpcId: {Ref: VPCId}
+        VpcId: "${{self:custom.VPCId}}"
         GroupDescription: SG to sit in front of ECS hosts
         SecurityGroupIngress:
           - CidrIp: 0.0.0.0/0
@@ -175,7 +229,7 @@ resources:
       Type: AWS::ElasticLoadBalancingV2::LoadBalancer
       Properties:
         Name: ${{self:service}}-${{opt:stage, 'dev'}}-ECS-ALB
-        Subnets: {Ref: NatSubnets}
+        Subnets: "${{self:custom.NatSubnets}}"
         SecurityGroups:
           - {Ref: LoadBalancerSG}
         Tags:
@@ -194,7 +248,7 @@ resources:
       Type: AWS::ElasticLoadBalancingV2::LoadBalancer
       Properties:
         Name: ${{self:service}}-${{opt:stage, 'dev'}}-Pub-LB
-        Subnets: {Ref: PublicSubnets}
+        Subnets: "${{self:custom.PublicSubnets}}"
         SecurityGroups:
           - {Ref: LoadBalancerSG}
         Tags:
@@ -217,14 +271,14 @@ resources:
       Type: AWS::ElasticLoadBalancingV2::TargetGroup
       Properties:
         Name: ${{self:service}}-${{opt:stage, 'dev'}}-PrvTGrp
-        VpcId: {Ref: VPCId}
+        VpcId: "${{self:custom.VPCId}}"
         Port: 80
         Protocol: HTTP
     DefaultPublicTargetGroup:
       Type: AWS::ElasticLoadBalancingV2::TargetGroup
       Properties:
         Name: ${{self:service}}-${{opt:stage, 'dev'}}-PubTGrp
-        VpcId: {Ref: VPCId}
+        VpcId: "${{self:custom.VPCId}}"
         Port: 80
         Protocol: HTTP
 
@@ -235,18 +289,18 @@ resources:
     ECSAutoscalingGroup:
       Type: AWS::AutoScaling::AutoScalingGroup
       Properties:
-        VPCZoneIdentifier: {Ref: NatSubnets}
+        VPCZoneIdentifier: "${{self:custom.NatSubnets}}"
         LaunchConfigurationName: {Ref: ECSLaunchConfiguration}
-        MinSize: {Ref: ClusterSize}
-        MaxSize: {Ref: ClusterSize}
-        DesiredCapacity: {Ref: ClusterSize}
+        MinSize: "${{self:custom.ClusterSize}}"
+        MaxSize: "${{self:custom.ClusterSize}}"
+        DesiredCapacity: "${{self:custom.ClusterSize}}"
         Tags:
           - Key: Name
             Value: ${{self:service}}-${{opt:stage, 'dev'}} ECS Host
             PropagateAtLaunch: true
       CreationPolicy:
         ResourceSignal:
-          Count: { Ref: ClusterSize }
+          Count: "${{self:custom.ClusterSize}}"
           Timeout: PT15M
       UpdatePolicy:
         AutoScalingRollingUpdate:
@@ -264,7 +318,7 @@ resources:
       Type: AWS::AutoScaling::LaunchConfiguration
       Properties:
         ImageId:  {Fn::FindInMap: [AWSRegionToAMI, {Ref: "AWS::Region"}, AMI]}
-        InstanceType: {Ref: Ec2InstanceType}
+        InstanceType: "${{self:custom.Ec2InstanceType}}"
         SecurityGroups:
           - {Ref: EcsHostSG}
         IamInstanceProfile: {Ref: ECSInstanceProfile}
@@ -484,7 +538,7 @@ resources:
     SocketIOTargetGroup:
       Type: AWS::ElasticLoadBalancingV2::TargetGroup
       Properties:
-        VpcId: { Ref: VPCId }
+        VpcId: "${{self:custom.VPCId}}"
         Port: 3005
         Protocol: HTTP
         Matcher:
@@ -562,3 +616,6 @@ resources:
     TestRDSEndpointPort:
       Description: "Endpoint.Address"
       Value: {"Fn::GetAtt": ["TestRDS","Endpoint.Port"]}
+    TestRDSDBName:
+      Description: "RDS DBName"
+      Value: ${{self:resources.Resources.TestRDS.Properties.DBName}}

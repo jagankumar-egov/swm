@@ -16,10 +16,11 @@
   <dependencies>
       <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-core -->
       <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-lambda -->
+      <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-lambda-java-core -->
       <dependency>
           <groupId>com.amazonaws</groupId>
           <artifactId>aws-lambda-java-core</artifactId>
-          <version>1.1.0</version>
+          <version>1.2.0</version>
       </dependency>
       <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-lambda-java-events -->
       <dependency>
@@ -31,9 +32,52 @@
       <dependency>
           <groupId>com.amazonaws</groupId>
           <artifactId>aws-java-sdk-kinesis</artifactId>
-          <version>1.11.275</version>
+          <version>1.11.276</version>
       </dependency>
       <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-events -->
+      <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-ssm -->
+      <dependency>
+          <groupId>com.amazonaws</groupId>
+          <artifactId>aws-java-sdk-ssm</artifactId>
+          <version>1.11.276</version>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/postgresql/postgresql -->
+      <dependency>
+          <groupId>postgresql</groupId>
+          <artifactId>postgresql</artifactId>
+          <version>9.1-901-1.jdbc4</version>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/io.socket/socket.io-client -->
+      <dependency>
+          <groupId>io.socket</groupId>
+          <artifactId>socket.io-client</artifactId>
+          <version>1.0.0</version>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/junit/junit -->
+      <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <version>4.12</version>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.powermock</groupId>
+          <artifactId>powermock-module-junit4</artifactId>
+          <version>1.6.4</version>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.powermock</groupId>
+          <artifactId>powermock-api-mockito</artifactId>
+          <version>1.6.4</version>
+          <scope>test</scope>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/com.amazonaws/amazon-kinesis-client -->
+      <dependency>
+          <groupId>com.amazonaws</groupId>
+          <artifactId>amazon-kinesis-client</artifactId>
+          <version>1.9.0</version>
+      </dependency>
   </dependencies>
 
   <build>
