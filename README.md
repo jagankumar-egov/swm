@@ -17,10 +17,12 @@ You can set the RDS username and password from the aws command line or via the [
     aws ssm put-parameter --type String --name /serverless-java/dev/rds_username --value rdsusername
     aws ssm put-parameter --type SecureString --name /serverless-java/dev/rds_password --value rdspassword
 
-If you want to use SecureString you'll need to update the serverless.yml file to tell it to decrypt the value with the ~true flag:
+If you don't create these parameters you will see a warning like this when deploying your stack:
 
-    ${ssm:/path/to/secureparam~true}
-
+    Serverless Warning --------------------------------------
+    
+         A valid SSM parameter to satisfy the declaration 'ssm:/serverless-java/prod/rds_username' could not be found.
+  
 ## Build
 
 ### Lambda function
@@ -57,12 +59,13 @@ The default deployment stage is dev.
     serverless deploy -v
 
 You will probably want to create your own stack under your name.
+Note that due to API Gateway naming conventions, the stage name must be alphanumeric or underscore only. (Creation will fail with error "Stage name only allows a-zA-Z0-9_")
 
-    serverless deploy -v -s dev-seth
+    serverless deploy -v -s devseth
 
 ## Undeploy (remove)
 
-    serverless remove -s dev-seth
+    serverless remove -s devseth
 
 ## Test
 

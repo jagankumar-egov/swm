@@ -1,6 +1,6 @@
 package org.egov;
 
-import com.amazonaws.auth.InstanceProfileCredentialsProvider;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.v2.IRecordProcessor;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.v2.IRecordProcessorFactory;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
@@ -15,17 +15,16 @@ public class SimpleKinesisListener {
 
     private static final Logger LOG = Logger.getLogger(String.valueOf(SimpleKinesisListener.class));
 
-    private static KinesisEventHandler _eventHandler = new VehicleKinesisEventHandler();
-
     private final Worker worker;
 
     // TODO: configuration, testing
+    // TODO: KCL uses DynamoDB to manage listening across shards, etc
 
-    public SimpleKinesisListener() {
+    public SimpleKinesisListener(String kinesisStreamName) {
         final KinesisClientLibConfiguration config = new KinesisClientLibConfiguration(
                 this.getClass().getSimpleName(),
-                "TODO: STREAMNAME",
-                InstanceProfileCredentialsProvider.getInstance(),
+                kinesisStreamName,
+                DefaultAWSCredentialsProviderChain.getInstance(),
                 "WORKERID"
         );
         final IRecordProcessorFactory recordProcessorFactory = new SimpleRecordProcessorFactory();
@@ -35,12 +34,15 @@ public class SimpleKinesisListener {
                 .build();
     }
 
-    public void run() {
+    void run() {
         worker.run();
     }
 
     public static void main(String[] args) {
-        new SimpleKinesisListener().run();
+        if(args.length < 1) {
+            System.err.println("first argument should be KinesisStreamName");
+        }
+        new SimpleKinesisListener(args[0]).run();
     }
 
     public class SimpleRecordProcessorFactory implements IRecordProcessorFactory {
@@ -57,6 +59,9 @@ public class SimpleKinesisListener {
         }
 
         private class SampleRecordProcessor implements IRecordProcessor {
+
+            private VehicleKinesisEventHandler _kinesisHandler = new VehicleKinesisEventHandler();
+
             @Override
             public void initialize(InitializationInput initializationInput) {
                 LOG.info("initialize SampleRecordProcessor");
@@ -64,7 +69,7 @@ public class SimpleKinesisListener {
 
             @Override
             public void processRecords(ProcessRecordsInput processRecordsInput) {
-                processRecordsInput.getRecords().forEach(record -> VehicleKinesisEventHandler.processData(record.getData()));
+                _kinesisHandler.handleEvent(processRecordsInput);
             }
 
             @Override

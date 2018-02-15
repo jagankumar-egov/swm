@@ -21,10 +21,26 @@ public class SocketIOClientTest {
 
     String SOCKETIO_SERVER = "http://serverless-java-dev-sl-Pub-LB-892070502.ap-southeast-1.elb.amazonaws.com:3005/location";
 
-    @Test
+    String JSON_MESSAGE = "{\n" +
+            "  \"vehicleNo\":\"123\",\n" +
+            "  \"routeCode\":\"abc\",\n" +
+            "  \"BatteryInfo\":{},\n" +
+            "  \"coords\": {\n" +
+            "    \"accuracy\": 9.64799976348877,\n" +
+            "    \"altitude\": 815.634765625,\n" +
+            "    \"heading\": 0,\n" +
+            "    \"latitude\": 12.9187821,\n" +
+            "    \"longitude\": 77.6702731,\n" +
+            "    \"speed\": 0\n" +
+            "  },\n" +
+            "  \"mocked\": false,\n" +
+            "  \"timestamp\": 1518584082935\n" +
+            "}";
+
+    //@Test
     public void testSendMessage() throws Exception {
         PowerMockito.mockStatic(System.class);
         PowerMockito.when(System.getenv(SocketIOClient.SOCKETIO_SERVER)).thenReturn(SOCKETIO_SERVER);
-        SocketIOClient.SendMessage("{}"); // TODO: stop testing external dependencies in unit test
+        SocketIOClient.SendMessage(JSON_MESSAGE); // TODO: stop testing external dependencies in unit test
     }
 }

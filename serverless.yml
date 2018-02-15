@@ -6,6 +6,9 @@ provider:
   runtime: java8
   timeout: 20 # optional, in seconds, default is 6
   region: ap-southeast-1
+  vpc:
+    securityGroupIds: ${{self:custom.LambdaSecurityGroupIds}}
+    subnetIds: ${{self:custom.NatSubnets}}
   # needed to not confuse serverless' variable syntax with CFN's
   # see https://serverless.com/framework/docs/providers/aws/guide/variables/#using-custom-variable-syntax
   variableSyntax: "\\${{([ ~:a-zA-Z0-9._\\'\",\\-\\/\\(\\)]+?)}}"
@@ -26,11 +29,29 @@ provider:
         - "logs:CreateLogStream"
         - "logs:PutLogEvents"
       Resource: "*"
+    - Effect: Allow
+      Action:
+        - "kinesis:PutRecord"
+      Resource:
+        - 'Fn::Join':
+          - ':'
+          -
+            - 'arn:aws:kinesis'
+            - Ref: 'AWS::Region'
+            - Ref: 'AWS::AccountId'
+            - 'stream/${{self:resources.Resources.TestKinesisStream.Properties.Name}}'
 
 # you can define service wide environment variables here
-#  environment:
-#    variable1: value1
-
+  environment:
+    RDS_ENDPOINT: {"Fn::GetAtt": ["TestRDS","Endpoint.Address"]}
+    RDS_PORT: {"Fn::GetAtt": ["TestRDS","Endpoint.Port"]}
+    RDS_USERNAME_PARAMETER: /${{self:service}}/${{opt:stage, 'dev'}}/rds_username
+    RDS_PASSWORD_PARAMETER: /${{self:service}}/${{opt:stage, 'dev'}}/rds_password
+    RDS_DBNAME: ${{self:resources.Resources.TestRDS.Properties.DBName}}
+    SOCKETIO_SERVER:
+      Fn::Join:
+        - ""
+        - [ "http://", {Fn::GetAtt: ["PublicLoadBalancer", "DNSName"]}, "/location" ]
 custom:
   VPCId: vpc-904ae1f7 # Joel's test VPC in ap-southeast-1 # TODO: update these accordingly
   NatSubnets:
@@ -53,21 +74,18 @@ package:
   artifact: target/simplelambdahandler-1.0.0.jar
 
 functions:
+  apiGatewayProcessingLambda:
+    handler: org.egov.ApiGatewayProcessingLambda
+    events:
+      - http: POST apidirect
+  apiGatewayKinesisPostingLambda:
+    handler: org.egov.ApiGatewayKinesisPostingLambda
+    events:
+      - http: POST apikinesis
+    environment:
+      KINESIS_STREAM: ${{self:resources.Resources.TestKinesisStream.Properties.Name}}
   simplelambdahandler:
     handler: org.egov.SimpleLambdaHandler
-    vpc:
-      securityGroupIds: ${{self:custom.LambdaSecurityGroupIds}}
-      subnetIds: ${{self:custom.NatSubnets}}
-    environment:
-      RDS_ENDPOINT: {"Fn::GetAtt": ["TestRDS","Endpoint.Address"]}
-      RDS_PORT: {"Fn::GetAtt": ["TestRDS","Endpoint.Port"]}
-      RDS_USERNAME_PARAMETER: /${{self:service}}/${{opt:stage, 'dev'}}/rds_username
-      RDS_PASSWORD_PARAMETER: /${{self:service}}/${{opt:stage, 'dev'}}/rds_password
-      RDS_DBNAME: ${{self:resources.Resources.TestRDS.Properties.DBName}}
-      SOCKETIO_SERVER:
-        Fn::Join:
-          - "/"
-          - [ "http:/", { Fn::GetAtt: ["PublicLoadBalancer", "DNSName"]}, "location" ]
     events:
       - stream:
           type: kinesis

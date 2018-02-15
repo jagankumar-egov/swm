@@ -1,9 +1,6 @@
 package org.egov;
 
-import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
-
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,19 +9,22 @@ public class VehicleKinesisEventHandler implements KinesisEventHandler {
 
     private static final Logger LOG = Logger.getLogger(String.valueOf(VehicleKinesisEventHandler.class));
 
-    private static StorageProvider _storageProvider = new PostgresStorageProvider();
+    private static StorageProvider _storageProvider;
 
-    @Override
-    public void handleKinesisEvent(KinesisEvent.KinesisEventRecord kinesisEventRecord) {
-        processData(kinesisEventRecord.getKinesis().getData());
+    public VehicleKinesisEventHandler() {
+        _storageProvider = new PostgresStorageProvider();
     }
 
-    public static void processData(ByteBuffer data) {
-        byte[] byteArray = data.array();
-        String message = new String(byteArray, Charset.forName("UTF-8"));
+    public VehicleKinesisEventHandler(StorageProvider storageProvider) {
+        _storageProvider = storageProvider;
+    }
+
+    @Override
+    public void processData(ByteBuffer data) {
+        String message = byteBufferToString(data);
         String id = persistToDB(message);
         if(id != null) {
-            // do something else?
+            // do something with the ID of the inserted message?
         }
         try {
             SocketIOClient.SendMessage(message);

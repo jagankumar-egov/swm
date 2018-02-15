@@ -13,11 +13,13 @@ public class SocketIOClient {
 
     public static final String SOCKETIO_SERVER = "SOCKETIO_SERVER";
 
+    public static final String _serverURL = System.getenv(SOCKETIO_SERVER);
+
     public static void SendMessage(Object message) throws TimeoutException {
-        LOG.info("SENDING MESSAGE");
+        LOG.info("SENDING MESSAGE to " + _serverURL);
         Socket socket;
         try {
-            socket = IO.socket(System.getenv(SOCKETIO_SERVER));
+            socket = IO.socket(_serverURL);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }

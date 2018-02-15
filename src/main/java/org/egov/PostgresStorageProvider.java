@@ -6,7 +6,6 @@ import com.amazonaws.services.simplesystemsmanagement.model.GetParametersRequest
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -18,8 +17,6 @@ public class PostgresStorageProvider implements StorageProvider {
     private static AWSSimpleSystemsManagement _ssmclient= AWSSimpleSystemsManagementClientBuilder.defaultClient();
 
     private static final Logger LOG = Logger.getLogger(String.valueOf(PostgresStorageProvider.class));
-
-    public PostgresStorageProvider(){}
 
     public static final String TEST_TABLE_NAME = "test_table_name";
 
@@ -78,7 +75,7 @@ public class PostgresStorageProvider implements StorageProvider {
                 "  created_at  TIMESTAMP DEFAULT LOCALTIMESTAMP \n" +
                 ");";
         connection.prepareStatement(sql).execute();
-        // TODO: use type json rather than text
+        // TODO: use type json rather than text ?
     }
 
     private static void nuke(Connection connection) throws SQLException {
