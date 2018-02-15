@@ -13,6 +13,8 @@ public class Coords {
 	private Double longitude;
 	
 	private Integer speed;
+	
+	private Long altitudeAccuracy;
 
 	public Double getAccuracy() {
 		return accuracy;
@@ -60,7 +62,17 @@ public class Coords {
 
 	public void setSpeed(Integer speed) {
 		this.speed = speed;
+	}
+
+	public Long getAltitudeAccuracy() {
+		return altitudeAccuracy;
+	}
+
+	public void setAltitudeAccuracy(Long altitudeAccuracy) {
+		this.altitudeAccuracy = altitudeAccuracy;
 	}	
+	
+	
 	
 	
 	

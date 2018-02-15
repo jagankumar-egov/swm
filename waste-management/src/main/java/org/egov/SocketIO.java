@@ -1,9 +1,6 @@
 package org.egov;
 
-import java.net.Socket;
-
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

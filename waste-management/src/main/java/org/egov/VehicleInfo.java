@@ -13,7 +13,6 @@ public class VehicleInfo {
 	
 	private String routeCode;
 	
-	@JsonIgnore
 	private BatteryInfo batteryInfo;
 	
 	private Coords coords;
