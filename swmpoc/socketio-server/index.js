@@ -1,12 +1,16 @@
 var ontime = require('ontime');
 var moment = require('moment-timezone');
 var socketio = require('socket.io');
+var redis = require('socket.io-redis');
 var fs = require('fs');
 var http = require('http');
 var CronJob = require('cron').CronJob;
 
-
 var io = socketio.listen(3005);
+if (process.env.REDIS_SERVER) {
+  console.log("connecting to redis server: " + process.env.REDIS_SERVER + ":" + process.env.REDIS_PORT);
+  io.adapter(redis({ host: process.env.REDIS_SERVER, port: process.env.REDIS_PORT }));
+}
 
 // creating namespaces
 var location_nsp = io.of('/location');
