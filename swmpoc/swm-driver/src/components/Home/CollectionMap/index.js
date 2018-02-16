@@ -182,7 +182,7 @@ export default class CollectionMap extends React.Component {
           strokeWidth={6}
         />
       </MapView>}
-      {<Button
+      {location && <Button
         style={{width: Dimensions.get('window').width, height: 35}}
         onPress={_goback}
         title="End Trip"
