@@ -17,6 +17,9 @@ public class SocketIO {
 	@Value("${socket.io.host}")
 	private String socketHost;
 	
+	@Value("${socket.io.namespace}")
+	private String socketNamespace;
+	
 	@Value("${socket.default.room}")
 	private String socketRoom;
 	
@@ -29,7 +32,7 @@ public class SocketIO {
 		opts.timeout = 100 * 1000;
 		opts.reconnectionAttempts = 1000;
 		opts.reconnectionDelay = 0;
-		final io.socket.client.Socket socket = IO.socket(socketHost, opts);
+		final io.socket.client.Socket socket = IO.socket(socketHost+socketNamespace, opts);
 		
         socket.on(io.socket.client.Socket.EVENT_CONNECT, new Emitter.Listener() {
         @Override
