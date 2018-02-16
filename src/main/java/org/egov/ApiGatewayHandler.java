@@ -5,6 +5,7 @@ import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.lang.StringEscapeUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,10 +23,17 @@ public interface ApiGatewayHandler extends RequestStreamHandler {
         ObjectNode response = OBJECT_MAPPER.createObjectNode();
         try {
             JsonNode jsonNode = OBJECT_MAPPER.readValue(inputStream, JsonNode.class);
-            context.getLogger().log(jsonNode.toString());
+            //context.getLogger().log(OBJECT_MAPPER.writeValueAsString(jsonNode));
             JsonNode body = jsonNode.path("body");
+            // TODO: this body element has escaped quotes
+            //       like this: "{\"records\":[{\"value\":{\"vehicleNo\":\"KA1201\",
+            String stringBody = OBJECT_MAPPER.writeValueAsString(body);
+            stringBody = stringBody.substring(1, stringBody.length() - 1); // kill leading and trailing "
+            String unescaped = StringEscapeUtils.unescapeJava(stringBody); // unescape "
 
-            processMessageBody(body);
+            context.getLogger().log(unescaped);
+            JsonNode jsonBody = OBJECT_MAPPER.readValue(unescaped, JsonNode.class);
+            processMessageBody(jsonBody);
 
             ObjectNode headerJson = OBJECT_MAPPER.createObjectNode();
             headerJson.put("x-custom-header", "bw");

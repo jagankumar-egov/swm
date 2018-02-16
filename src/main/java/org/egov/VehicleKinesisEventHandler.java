@@ -32,8 +32,8 @@ public class VehicleKinesisEventHandler implements KinesisEventHandler {
             JsonNode jsonNode = OBJECT_MAPPER.readValue(data.array(), JsonNode.class);
 
             if(jsonNode.has("records")) {
-                JsonNode records = jsonNode.path("records");
-                records.forEach(record -> processRecord(record.path("value")));
+                jsonNode.path("records")
+                        .forEach(record -> processRecord(record.path("value")));
             } else {
                 processRecord(jsonNode);
             }
