@@ -11,6 +11,10 @@ Prerequisite:
     * socketio-server/ : websocket server
     * swm-admin/ : Admin Dashboard (React App)
     * swm-driver/: Driver App (React Native)
+    * serverless/: POC for the data flow through AWS-native services
+
+Local setup:
+
 * Setup Confluent kafka (https://docs.confluent.io/current/quickstart.html)
   - Start zookeeper
   - Start kafka server
@@ -18,3 +22,5 @@ Prerequisite:
 * Run the springboot application
 * Run socketio server
 * Run admin dashboard server
+
+Serverless Setup: Follow the instructions in the [serverless README](./swmpoc/serverless/README.md).
