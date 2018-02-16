@@ -5,6 +5,7 @@ import { Constants, Location, Permissions } from "expo";
 import { commonApi } from "../../../utility/api";
 import collectionPoint from '../../../../assets/garbage-pickup.png';
 import truck from '../../../../assets/truck.png';
+// import { Button } from 'react-native-elements';
 var BatteryManager = require('NativeModules').BatteryManager;
 
 var timerObject;
@@ -51,7 +52,7 @@ export default class CollectionMap extends React.Component {
 
   componentWillUnmount() {
     clearInterval(timerObject);
-    this._subscription.remove();
+    // this._subscription.remove();
   }
 
   _getLocationAsync = async () => {
@@ -80,14 +81,22 @@ export default class CollectionMap extends React.Component {
         console.log(res);
       })
       .catch(err => {
-        console.log("hai");
+        // console.log("hai");
         console.log(err);
       });
   };
 
+  _goback = () =>
+  {
+    let {startMyRoute} =this.props;
+    console.log("clicked");
+    startMyRoute(false);
+  }
+
   render() {
-    let { mapDetails ,inputData,startMyRoute} = this.props;
+    let { mapDetails ,inputData} = this.props;
     let { location } = this.state;
+    let {_goback} = this;
     let index=0;
     if (inputData.routeNo=="Route2") {
       index=1;
@@ -173,13 +182,28 @@ export default class CollectionMap extends React.Component {
           strokeWidth={6}
         />
       </MapView>}
-      <Button
+      {<Button
         style={{width: Dimensions.get('window').width, height: 35}}
-        onPress={()=>{this.props.startMyRoute(false)}}
+        onPress={_goback}
         title="End Trip"
         color="#841584"
         accessibilityLabel="Go back to home"
       />
+      /*<Button
+        text="End Trip"
+        textStyle={{ fontWeight: "700" }}
+        onPress={_goback}
+        buttonStyle={{
+          backgroundColor: "rgba(92, 99,216, 1)",
+          width: 300,
+          height: 35,
+          borderColor: "transparent",
+          borderWidth: 0,
+          borderRadius: 5
+        }}
+        containerStyle={{ marginTop: 20 }}
+      />
+      */}
       </View>
     );
   }
