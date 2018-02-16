@@ -16,10 +16,14 @@ import java.util.logging.Logger;
 // See https://stackoverflow.com/a/23937192
 @PowerMockIgnore("javax.net.ssl.*")
 public class SocketIOClientTest {
+    /* NB: This client exists solely for debugging purposes (e.g., via IntelliJ) rather than as a
+     * test to run as part of the build process. To use, you'll need to update the SOCKETIO_SERVER
+     * below to point to your test SocketIO endpoint.
+     * */
 
     private static final Logger LOG = Logger.getLogger(String.valueOf(SocketIOClientTest.class));
 
-    String SOCKETIO_SERVER = "http://serverless-java-dev-sl-Pub-LB-892070502.ap-southeast-1.elb.amazonaws.com:3005/location";
+    String SOCKETIO_SERVER = "http://serverless-java-devjoel-Pub-LB-1976546250.ap-southeast-1.elb.amazonaws.com/location";
 
     String JSON_MESSAGE = "{\n" +
             "  \"vehicleNo\":\"123\",\n" +

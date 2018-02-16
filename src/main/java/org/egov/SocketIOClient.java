@@ -1,9 +1,16 @@
 package org.egov;
 
 import io.socket.client.IO;
+import io.socket.client.Manager;
 import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
+import io.socket.engineio.client.Transport;
 
+import java.io.IOException;
+import java.net.CookieManager;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
@@ -14,15 +21,59 @@ public class SocketIOClient {
     public static final String SOCKETIO_SERVER = "SOCKETIO_SERVER";
 
     public static final String _serverURL = System.getenv(SOCKETIO_SERVER);
+    private static final URI _socketURI = convertToUri(_serverURL);
+    private static URI convertToUri(String url)
+    {
+            try {
+                return new URI(url);
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+    }
 
     public static void SendMessage(Object message) throws TimeoutException {
         LOG.info("SENDING MESSAGE to " + _serverURL);
         Socket socket;
-        try {
-            socket = IO.socket(_serverURL);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+        CookieManager cookieManager = new CookieManager();
+        socket = IO.socket(_socketURI);
+        // This is a bit of an abomination because the socketio maintainer refuses to include
+        // proper cookie support, so we're left to build it in ourselves.
+        // See https://github.com/socketio/socket.io-client-java/issues/32
+        // Cookie support is needed if we're going to load balance between multiple SocketIO
+        // servers and rely on cookies for session stickiness (which is what AWS ALBs do)
+        // https://socket.io/docs/using-multiple-nodes/#sticky-load-balancing only suggests
+        // creating stickiness based upon source IP
+        socket.io().on(Manager.EVENT_TRANSPORT, new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                Transport transport = (Transport)args[0];
+                transport.on(Transport.EVENT_REQUEST_HEADERS, new Emitter.Listener() {
+                    @Override
+                    public void call(Object... args) {
+                        Map<String, List<String>> headers = (Map<String, List<String>>)args[0];
+                        Map<String, List<String>> cookieHeaders;
+                        try {
+                            cookieHeaders = cookieManager.get(_socketURI, headers);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        for(Map.Entry<String, List<String>> entry : cookieHeaders.entrySet()) {
+                            headers.put(entry.getKey(), entry.getValue());
+                        }
+                    }
+                }).on(Transport.EVENT_RESPONSE_HEADERS, new Emitter.Listener() {
+                    @Override
+                    public void call(Object... args) {
+                        Map<String, List<String>> headers = (Map<String, List<String>>)args[0];
+                        try {
+                            cookieManager.put(_socketURI, headers);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }
+        });
         socket.connect();
         socket.emit("data", message);
         // The socket connection happens asynchronously on a background thread,

@@ -7,7 +7,8 @@ provider:
   timeout: 20 # optional, in seconds, default is 6
   region: ap-southeast-1
   vpc:
-    securityGroupIds: ${{self:custom.LambdaSecurityGroupIds}}
+    securityGroupIds:
+      - { Ref: LambdaSG }
     subnetIds: ${{self:custom.NatSubnets}}
   # needed to not confuse serverless' variable syntax with CFN's
   # see https://serverless.com/framework/docs/providers/aws/guide/variables/#using-custom-variable-syntax
@@ -66,10 +67,12 @@ custom:
     - subnet-3b791572
     - subnet-e8b4c88f
     - subnet-26c1c260
-  LambdaSecurityGroupIds:
-    - sg-4ed21c37
+  # LambdaSecurityGroupIds:
+  #   - sg-4ed21c37
   Ec2InstanceType: "t2.large"
   ClusterSize: "3"
+  SocketIoRedisClusterType: cache.t2.small
+  SocketIoRedisNumNodes: 2
 package:
   artifact: target/simplelambdahandler-1.0.0.jar
 
@@ -612,7 +615,7 @@ resources:
       Properties:
         Cluster: { Ref: ECSCluster }
         Role: { Ref: SocketIOServiceRole }
-        DesiredCount: 1
+        DesiredCount: 2
         TaskDefinition: { Ref: SocketIOTaskDefinition }
         LoadBalancers:
           - ContainerName: socketio
@@ -625,6 +628,11 @@ resources:
         ContainerDefinitions:
           - Name: socketio
             Essential: true
+            Environment:
+              - Name: REDIS_SERVER
+                Value: { Fn::GetAtt: ["SocketIORedisCluster", "ConfigurationEndPoint.Address"] }
+              - Name: REDIS_PORT
+                Value: { Fn::GetAtt: ["SocketIORedisCluster", "ConfigurationEndPoint.Port"] }
             Image: 854766835649.dkr.ecr.ap-southeast-1.amazonaws.com/egov-dev/socketio:latest
             Memory: 128
             PortMappings:
@@ -652,6 +660,11 @@ resources:
         HealthCheckPath: /socket.io/
         HealthCheckTimeoutSeconds: 5
         HealthyThresholdCount: 2
+        TargetGroupAttributes:
+          - Key: stickiness.enabled
+            Value: true
+          - Key: stickiness.type
+            Value: lb_cookie
     SocketIOListenerRule:
       Type: AWS::ElasticLoadBalancingV2::ListenerRule
       Properties:
@@ -701,6 +714,37 @@ resources:
                         "Resource": "*"
                 }]
               }
+    SocketIORedisSubnetGroup:
+      Type: AWS::ElastiCache::SubnetGroup
+      Properties:
+        Description: "${{self:service}}-${{opt:stage, 'dev'}} SocketIO Redis Cluster"
+        SubnetIds: "${{self:custom.PrivateSubnets}}"
+    SocketIORedisSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        VpcId: "${{self:custom.VPCId}}"
+        GroupDescription: "SG For ${{self:service}}-${{opt:stage, 'dev'}} SocketIO Redis cluster"
+        SecurityGroupIngress:
+          - CidrIp: 0.0.0.0/0
+            IpProtocol: -1
+        Tags:
+          - Key: Name
+            Value: ${{self:service}}-${{opt:stage, 'dev'}}-SocketIO-Redis-SG
+    SocketIORedisCluster:
+      Type: AWS::ElastiCache::ReplicationGroup
+      Properties:
+        AtRestEncryptionEnabled: true
+        AutomaticFailoverEnabled: true
+        CacheNodeType: ${{self:custom.SocketIoRedisClusterType }}
+        CacheParameterGroupName: default.redis3.2.cluster.on
+        CacheSubnetGroupName: { Ref: SocketIORedisSubnetGroup }
+        Engine: redis
+        EngineVersion: 3.2.6
+        NumCacheClusters: ${{self:custom.SocketIoRedisNumNodes }}
+        Port: 6379
+        ReplicationGroupDescription: "Redis cluster for ${{self:service}}-${{opt:stage, 'dev'}} SocketIO cluster"
+        SecurityGroupIds:
+          - { Ref: SocketIORedisSecurityGroup }
 ##########################################################
 #              END SocketIO Service Definition           #
 ##########################################################
@@ -715,7 +759,7 @@ resources:
       Properties:
         Cluster: { Ref: ECSCluster }
         Role: { Ref: AdminUIServiceRole }
-        DesiredCount: 1
+        DesiredCount: 2
         TaskDefinition: { Ref: AdminUITaskDefinition }
         LoadBalancers:
           - ContainerName: swm-admin
