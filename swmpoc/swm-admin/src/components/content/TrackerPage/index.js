@@ -251,7 +251,7 @@ class Tracker extends Component {
 
       if(!_.isEmpty(msg)) {
         msg = JSON.parse(msg);
-        if(appData.vehicleLocations) {
+        if(appData.vehicleLocations && !_.isEmpty(msg.coords)) {
           if(!_.find(appData.vehicleLocations, {'vehicleNo': msg["vehicleNo"]})) {
             let vehicleLocation = {};
             vehicleLocation.vehicleNo= msg["vehicleNo"];
@@ -276,7 +276,7 @@ class Tracker extends Component {
         }
       }
       console.log(appData.vehicleLocations);
-      
+
       self.setState({
         ...state,
         appData: appData
