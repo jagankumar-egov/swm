@@ -10,7 +10,12 @@ The Lambda function in this project is written in Java.
 
 Requires Java8, Maven, Serverless
 
-[Serverless docs](https://serverless.com/framework/docs/providers/aws/guide/intro/)
+[Serverless docs](https://serverless.com/framework/docs/providers/aws/guide/intro/). To install
+serverless, you need a current npm install, and then execute:
+
+```bash
+$ npm install serverless
+```
 
 You can set the RDS username and password from the aws command line or via the [AWS Console](https://ap-southeast-1.console.aws.amazon.com/systems-manager/parameters?region=ap-southeast-1)
 
@@ -33,11 +38,11 @@ $ mvn clean package
 
 ### SocketIO Docker Image
 
-This comes from the [swm](https://github.com/egovernments/swm) repository in the `socketio-server`
-folder. The docker image is stored in Joel's private ECR registry.  From the socketio-server
+This comes from the [socketio-server](../socketio-server) folder. The docker image is currently
+stored in Joel's private ECR registry.  From the socketio-server
 directory of the swm repository, execute these commands (updating the image repository with your ECR
 repository, replacing `854766835649.dkr.ecr.ap-southeast-1.amazonaws.com/egov-dev/socketio` with
-your ECR repository as appropriate):
+your docker repository as appropriate):
 
 1. `$ aws ecr get-login --no-include-email --region ap-southeast-1`
 1. Run the docker login command that was returned in the previous step.
@@ -49,14 +54,26 @@ your ECR repository as appropriate):
 
 ### AdminUI Docker Image
 
-This comes from the [swm](https://github.com/egovernments/swm) repository, in the `swm-admin`
+This comes from the [swm-admin](../swm-admin)
 folder.  Follow the same steps as above, but replace `socketio` with `swm-admin`.
 
 ## Deploy
 
-The default deployment stage is dev.
+The stack assumes that you have a VPC with three tiers of subnets:
 
-    serverless deploy -v
+* A "public" tier where subnets have a default route to an IGW
+* A "NAT" tier where subnets have a default route to a NAT gateway
+* A "Private" tier where subnets have no default route
+
+Update serverless.yml and, in the `custom` section, replace the `VPCId` and the various subnets with
+the VPC ID and the subnet IDs of these subnets. Also update the AdminUIDockerImage and the
+SocketIODockerImage properties with the image locations of the docker images discussed previously
+(either an ECR repository or a Docker Hub repository).
+
+Once you are ready to deploy, the default stage is `dev`:
+```bash
+$ serverless deploy -v
+```
 
 You will probably want to create your own stack under your name.
 Note that due to API Gateway naming conventions, the stage name must be alphanumeric or underscore only. (Creation will fail with error "Stage name only allows a-zA-Z0-9_")

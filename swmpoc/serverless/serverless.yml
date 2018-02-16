@@ -54,6 +54,7 @@ provider:
         - ""
         - [ "http://", {Fn::GetAtt: ["PublicLoadBalancer", "DNSName"]}, "/location" ]
 custom:
+  # Update these for your particular deployment!
   VPCId: vpc-904ae1f7 # Joel's test VPC in ap-southeast-1 # TODO: update these accordingly
   NatSubnets:
     - subnet-3b741872
@@ -67,8 +68,8 @@ custom:
     - subnet-3b791572
     - subnet-e8b4c88f
     - subnet-26c1c260
-  # LambdaSecurityGroupIds:
-  #   - sg-4ed21c37
+  AdminUIDockerImage: 854766835649.dkr.ecr.ap-southeast-1.amazonaws.com/egov-dev/swm-admin:latest
+  SocketIODockerImage: 854766835649.dkr.ecr.ap-southeast-1.amazonaws.com/egov-dev/socketio:latest
   Ec2InstanceType: "t2.large"
   ClusterSize: "3"
   SocketIoRedisClusterType: cache.t2.small
@@ -634,7 +635,7 @@ resources:
                 Value: { Fn::GetAtt: ["SocketIORedisCluster", "ConfigurationEndPoint.Address"] }
               - Name: REDIS_PORT
                 Value: { Fn::GetAtt: ["SocketIORedisCluster", "ConfigurationEndPoint.Port"] }
-            Image: 854766835649.dkr.ecr.ap-southeast-1.amazonaws.com/egov-dev/socketio:latest
+            Image: ${{self:custom.SocketIODockerImage}}
             Memory: 128
             PortMappings:
               - ContainerPort: 3005
@@ -781,7 +782,7 @@ resources:
                   Fn::Join:
                     - "/"
                     - [ "http:/", { Fn::GetAtt: ["PublicLoadBalancer", "DNSName"]}, "location" ]
-            Image: 854766835649.dkr.ecr.ap-southeast-1.amazonaws.com/egov-dev/swm-admin:latest
+            Image: ${{self:custom.AdminUIDockerImage}}
             Memory: 512
             PortMappings:
               - ContainerPort: 3000
