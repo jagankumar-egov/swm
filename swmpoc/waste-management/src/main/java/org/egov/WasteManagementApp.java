@@ -4,7 +4,9 @@ package org.egov;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.cassandra.CassandraDataAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -20,6 +22,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 @SpringBootApplication
 @Configuration
 @PropertySource("classpath:application.properties")
+@EnableAutoConfiguration(exclude={CassandraDataAutoConfiguration.class})
 public class WasteManagementApp
 {	
     @Autowired
