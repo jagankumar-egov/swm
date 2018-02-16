@@ -2,9 +2,9 @@ import axios from 'axios';
 import _ from 'lodash';
 
 var instance = axios.create({
-  baseURL: "http://172.16.4.164:8082",
+  baseURL: "https://gbq2ja2cv8.execute-api.ap-southeast-1.amazonaws.com",
   headers: {
-    'Content-Type': 'application/vnd.kafka.json.v2+json',
+    'Content-Type': 'application/json',
   },
 });
 

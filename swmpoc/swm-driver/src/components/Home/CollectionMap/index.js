@@ -75,7 +75,7 @@ export default class CollectionMap extends React.Component {
     let {batteryLevel,charging}=this.state;
     // location={"records":[{"value":{"vehicleNo":inputData.regNo,"routeCode":inputData.routeNo,"batteryInfo":{}, "key":"One",...location}}]};
     console.log({"records":[{"value":{"vehicleNo":inputData.regNo,"routeCode":inputData.routeNo,"batteryInfo":{batteryLevel,charging},...location},"key":"One"}]});
-    commonApi("post", "/topics/tour.info", {}, {"records":[{"value":{"vehicleNo":inputData.regNo,"routeCode":inputData.routeNo,"batteryInfo":{batteryLevel,charging},...location},"key":"One"}]})
+    commonApi("post", "/demo/swm-ingest", {}, {"records":[{"value":{"vehicleNo":inputData.regNo,"routeCode":inputData.routeNo,"batteryInfo":{batteryLevel,charging},...location},"key":"One"}]})
       .then(res => {
         console.log(res);
       })
