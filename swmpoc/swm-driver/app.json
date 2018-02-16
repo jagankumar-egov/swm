@@ -22,7 +22,8 @@
         "googleMaps": {
           "apiKey":"AIzaSyA-U_CkW-wXcgIyGsUXXdoZ7UJ31vjLNb8"
         }
-      }
+      },
+      "package": "com.egov.swmdriver"
     }
   }
 }
