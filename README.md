@@ -162,4 +162,12 @@ $ curl -X POST https://lq5hyy4kua.execute-api.ap-southeast-1.amazonaws.com/devjo
 
 ## Errata
 
-If you try to remove your stack, it may not delete the serverless deployment bucket cleanly. You may have to delete that manually.
+If you try to remove your stack, it may not delete the serverless deployment bucket cleanly. You may
+have to delete that manually.
+
+Sometimes the API Gateway `swm-ingest` method (the API-Gateway-To-Kinesis method) may return an
+error of `Missing Authentication Token`. That can be because of the way serverless handles API
+gateways (in particular the `swm-ingest` method won't have a `stage` -- go to the API gateway in the
+AWS console, find your API, go to `Stages` and see if the `/swm-ingest` method is there; if it
+isn't, then this is the problem). The solution is simple -- just rerun your `serverless deploy`
+command.
