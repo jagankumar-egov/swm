@@ -64,6 +64,11 @@ public class CassandraConnector {
     }
     
     public void insertVehicleInfo(VehicleInfo vehicleInfo) {
+    	try {
+    		createKeySpace();
+    	}catch(Exception e) {
+    		logger.error("DB set up already exists");
+    	}
         StringBuilder sb = new StringBuilder("INSERT INTO ")
           .append(cassandraKeySpace).append(".tour_info").append("(id, accuracy, altitude, heading, latitude, "
           		+ "longitude, mocked, routecode, speed, timestamp, vehicleno) ")
@@ -100,5 +105,26 @@ public class CassandraConnector {
               r.getString("code")));
         });
         return tests;
+    }
+    
+    public void createKeySpace() {
+	     StringBuilder sb = new StringBuilder("CREATE KEYSPACE WMKeyspace ")
+	        		.append("WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 3}; ");
+	     
+	     String use = "use WMKeyspace";
+	     
+	     StringBuilder query = new StringBuilder("CREATE TABLE tour_info "
+	     		+ "(id uuid PRIMARY KEY, vehicleNo text, routeCode text, accuracy double, "
+	     		+ "altitude double, heading double, latitude double, longitude double, speed double, mocked boolean, timestamp double)");
+	        
+	     session.execute(sb.toString());
+	     logger.info("Successfully created key space");
+	     
+	     session.execute(use);
+	     logger.info("Using keyspace WMKeyspace");
+
+	     session.execute(query.toString());
+	     logger.info("Successfully created table tour_info");
+
     }
 }

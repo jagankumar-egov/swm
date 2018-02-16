@@ -26,7 +26,7 @@ public class SocketIO {
 		IO.Options opts = new IO.Options();
 		opts.forceNew = true;
 		opts.reconnection = true;
-		opts.timeout = 20 * 1000;
+		opts.timeout = 100 * 1000;
 		opts.reconnectionAttempts = 1000;
 		opts.reconnectionDelay = 0;
 		final io.socket.client.Socket socket = IO.socket(socketHost, opts);
