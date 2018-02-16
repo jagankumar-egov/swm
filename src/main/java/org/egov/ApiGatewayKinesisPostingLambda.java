@@ -5,8 +5,11 @@ import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.AmazonKinesisClient;
 import com.amazonaws.services.kinesis.model.PutRecordRequest;
 import com.amazonaws.services.kinesis.model.PutRecordResult;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+
 import java.nio.ByteBuffer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 // This lambda receives a message from API Gateway and passes it on to Kinesis
@@ -23,11 +26,17 @@ public class ApiGatewayKinesisPostingLambda implements ApiGatewayHandler {
 			.build();
 
 
-    final String OUTPUT_STREAM = System.getenv("KINESIS_STREAM");
+    final static String OUTPUT_STREAM = System.getenv("KINESIS_STREAM");
 
     @Override
     public void processMessageBody(JsonNode body) {
-        ByteBuffer data = ByteBuffer.wrap(body.toString().getBytes());
+        ByteBuffer data;
+        try {
+            data = ByteBuffer.wrap(OBJECT_MAPPER.writeValueAsBytes(body));
+        } catch (JsonProcessingException e) {
+            LOG.log(Level.SEVERE, "Unable to convert JSON to ByteBuffer. ", e);
+            return; // throw e;
+        }
         // post data to kinesis
         PutRecordRequest putRecordRequest = new PutRecordRequest();
         putRecordRequest.setStreamName(OUTPUT_STREAM);

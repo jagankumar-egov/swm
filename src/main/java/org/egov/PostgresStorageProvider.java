@@ -71,7 +71,7 @@ public class PostgresStorageProvider implements StorageProvider {
     private static void ensureTestTableExists(Connection connection) throws SQLException {
         String sql = "CREATE TABLE IF NOT EXISTS " + TEST_TABLE_NAME + " (\n" +
                 "  id   SERIAL primary key,  \n" +
-                "  data TEXT   NOT NULL,  \n" +
+                "  data JSON   NOT NULL,  \n" +
                 "  created_at  TIMESTAMP DEFAULT LOCALTIMESTAMP \n" +
                 ");";
         connection.prepareStatement(sql).execute();

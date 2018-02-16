@@ -3,11 +3,14 @@ package org.egov;
 import com.amazonaws.services.kinesis.clientlibrary.types.ProcessRecordsInput;
 import com.amazonaws.services.kinesis.model.Record;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
 public interface KinesisEventHandler {
+
+    ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     default boolean handleEvent(KinesisEvent event) {
         event.getRecords().forEach(this::handleKinesisEvent);

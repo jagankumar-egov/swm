@@ -15,18 +15,19 @@ public interface ApiGatewayHandler extends RequestStreamHandler {
 
     void processMessageBody(JsonNode body);
 
+    ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     @Override
     default void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        ObjectNode response = objectMapper.createObjectNode();
+        ObjectNode response = OBJECT_MAPPER.createObjectNode();
         try {
-            JsonNode jsonNode = objectMapper.readValue(inputStream, JsonNode.class);
+            JsonNode jsonNode = OBJECT_MAPPER.readValue(inputStream, JsonNode.class);
             context.getLogger().log(jsonNode.toString());
             JsonNode body = jsonNode.path("body");
 
             processMessageBody(body);
 
-            ObjectNode headerJson = objectMapper.createObjectNode();
+            ObjectNode headerJson = OBJECT_MAPPER.createObjectNode();
             headerJson.put("x-custom-header", "bw");
 
             response.put("isBase64Encoded", false);

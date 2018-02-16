@@ -167,6 +167,7 @@ resources:
                 - ":kinesis:action/PutRecord" #this URI basically describes the service and action I want to invoke.
           IntegrationHttpMethod: POST #for kinesis using POST is required
           RequestTemplates:
+            # See https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html
             application/json: #now the mapping template for an incoming JSON
               Fn::Join:
                 - ""
@@ -179,7 +180,7 @@ resources:
                   #now encode the payload in base64 to form a valid Kinesis request
                   - "{\n" #begin of the Kinesis PutRequest Json
                   - "\"Data\": \"$b64\",\n"
-                  - "\"PartitionKey\": \"1\",\n" # todo PartitionKey
+                  - "\"PartitionKey\": \"$context.requestTimeEpoch\",\n" # todo PartitionKey
                   - "\"StreamName\": \""
                   - ${{self:resources.Resources.TestKinesisStream.Properties.Name}}
                   - "\"\n}" #end of the Kinesis PutRequest json
