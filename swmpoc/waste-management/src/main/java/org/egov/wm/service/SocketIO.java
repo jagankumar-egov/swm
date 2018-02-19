@@ -1,12 +1,15 @@
 package org.egov.wm.service;
 
+import org.egov.WasteManagementApp;
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.socket.client.IO;
+import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
 @Service
@@ -23,16 +26,23 @@ public class SocketIO {
 	@Value("${socket.default.room}")
 	private String socketRoom;
 	
+	@Autowired
+	private WasteManagementApp wasteManagementApp;
+	
 	public void pushToSocketIO(String key, String value) throws Exception {    
 		logger.info("Pushing to SocketIO.....");
 		
-		IO.Options opts = new IO.Options();
+/*		IO.Options opts = new IO.Options();
 		opts.forceNew = true;
 		opts.reconnection = true;
 		opts.timeout = 100 * 1000;
 		opts.reconnectionAttempts = 1000;
 		opts.reconnectionDelay = 0;
-		final io.socket.client.Socket socket = IO.socket(socketHost+socketNamespace, opts);
+		final io.socket.client.Socket socket = IO.socket(socketHost+socketNamespace, opts);*/
+		
+		final Socket socket = wasteManagementApp.getSocket();
+		
+		logger.info("socket: "+socket);
 		
         socket.on(io.socket.client.Socket.EVENT_CONNECT, new Emitter.Listener() {
         @Override

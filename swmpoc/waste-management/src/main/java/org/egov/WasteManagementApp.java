@@ -1,6 +1,13 @@
 package org.egov;
 
 
+import java.net.URISyntaxException;
+
+import javax.annotation.PostConstruct;
+
+import org.egov.wm.service.SocketIO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -19,6 +26,9 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
+import io.socket.client.IO;
+import io.socket.client.Socket;
+
 @SpringBootApplication
 @Configuration
 @PropertySource("classpath:application.properties")
@@ -27,6 +37,16 @@ public class WasteManagementApp
 {	
     @Autowired
     private static Environment env;
+    
+	public static final Logger logger = LoggerFactory.getLogger(WasteManagementApp.class);
+    
+	@Value("${socket.io.host}")
+	private String socketHost;
+	
+	@Value("${socket.io.namespace}")
+	private String socketNamespace;
+	
+	public static Socket socket = null;
         
     public void setEnvironment(final Environment env) {
     	WasteManagementApp.env = env;
@@ -48,6 +68,28 @@ public class WasteManagementApp
 		mapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
 		mapper.setSerializationInclusion(Include.NON_NULL);
 		return mapper;
+	}
+	
+	@PostConstruct
+	public void connectSocket(){
+		IO.Options opts = new IO.Options();
+		opts.forceNew = true;
+		opts.reconnection = true;
+		opts.timeout = 100 * 1000;
+		opts.reconnectionAttempts = 1000;
+		opts.reconnectionDelay = 0;
+		try {
+			logger.info("Connecting to the socket at.......: "+socketHost+socketNamespace);
+			final Socket socket = IO.socket(socketHost+socketNamespace, opts);
+			this.socket = socket;
+		}catch(Exception e) {
+			logger.error("socket connection failed!: ",e);
+		}
+		
+	}
+	
+	public Socket getSocket() {
+		return this.socket;
 	}
 	
 	
