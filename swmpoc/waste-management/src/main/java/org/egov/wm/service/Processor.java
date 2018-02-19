@@ -58,6 +58,9 @@ public class Processor{
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootStrapServer);
         props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+        props.put(StreamsConfig.BUFFERED_RECORDS_PER_PARTITION_CONFIG, 500);
+        
+
         
         logger.info("Into the method");
         final StreamsBuilder builder = new StreamsBuilder();
