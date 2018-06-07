@@ -91,6 +91,4 @@ public class WasteManagementApp
 	public Socket getSocket() {
 		return this.socket;
 	}
-	
-	
 }

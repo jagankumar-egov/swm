@@ -22,7 +22,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.google.gson.Gson;
 
 
 @Component
@@ -52,8 +53,9 @@ public class Processor{
 	
 	public static final Logger logger = LoggerFactory.getLogger(Processor.class);
 	
-    @PostConstruct      
+    @PostConstruct  
     public void kafkaStreamProcessor(){
+    	
         Properties props = new Properties();
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "wm-kafka-streams");
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootStrapServer);
@@ -68,18 +70,20 @@ public class Processor{
         logger.info("Into the method");
         final StreamsBuilder builder = new StreamsBuilder();
  
-        KStream<String, String> source = builder.stream(kafkaInStreamTopic);
-        source.to(kafkaStreamCassandraTopic);
+        KStream<String, String> source = builder.stream(kafkaInStreamTopic);//Topic
+        source.to(kafkaStreamCassandraTopic);//Topic
+        
         source.foreach(new ForeachAction<String, String>() {
             public void apply(String key, String value) {
-                logger.info(key + ": " + value);
+                logger.info("\n\n\n\n processor info\n kafkaStreamCassandraTopic : "+kafkaStreamCassandraTopic+"\n kafkaInStreamTopic: "+kafkaInStreamTopic+ key + ": " + value+"\n\n\n\n");
                 try {
                 	socketIO.pushToSocketIO(key, value);
+                	logger.info("\n\n\n\n$$$ pushing to socket\n\n\n\n");
                 }catch(Exception e) {
                 	logger.error("Couldn't post to socketIO: ",e);
-                    transformDataAndPersist(cassandraConnector, value);
+                    transformDataAndPersist(cassandraConnector, value, kafkaInStreamTopic);
                 }
-                transformDataAndPersist(cassandraConnector, value);
+                transformDataAndPersist(cassandraConnector, value, kafkaInStreamTopic);
             }
          });        
         
@@ -89,25 +93,26 @@ public class Processor{
             streams.start();
         } catch (Throwable e) {
         	logger.error("Exception while starting stream: ",e);
-        }	
+        }
+        //cassandraConnector.connect();
     }
     
-    private void transformDataAndPersist(CassandraConnector cassandraConnector, String value) {
+    private void transformDataAndPersist(CassandraConnector cassandraConnector, String value, String topic) {
     	logger.info("Transforming Data...");
-    	ObjectMapper mapper = new ObjectMapper();
     	VehicleInfo vehicleInfo = new VehicleInfo();
     	try {
-    		vehicleInfo = mapper.readValue(value, VehicleInfo.class);
+    		Gson gson = new Gson(); 
+    		if (topic.equals("vehicle.info")) {
+    			vehicleInfo = gson.fromJson(value, VehicleInfo.class);
+    			cassandraConnector.connect();
+    	        cassandraConnector.insertVehicleInfo(vehicleInfo);
+    		}
+    		//logger.info("\nProcessor :\n str_value: "+value+"\n"+"\n lat: "+ vehicleInfo.getCoords().getLatitude()+"\n\n");
     	}catch(Exception e) {
     		logger.error("Couldn't convert to VehicleInfo: ",e);
             cassandraConnector.connect();
             cassandraConnector.insertVehicleInfo(vehicleInfo);
     	}
-        cassandraConnector.connect();
-        cassandraConnector.insertVehicleInfo(vehicleInfo);
-        
-
-    	
+        	
     }
-   
 }

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.egov.wm.model.Test;
 import org.egov.wm.model.VehicleInfo;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,8 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Cluster.Builder;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 @Service
 public class CassandraConnector {
@@ -69,26 +72,24 @@ public class CassandraConnector {
     	}catch(Exception e) {
     		logger.error("DB set up already exists");
     	}
-        StringBuilder sb = new StringBuilder("INSERT INTO ")
-          .append(cassandraKeySpace).append(".tour_info").append("(id, accuracy, altitude, heading, latitude, "
-          		+ "longitude, mocked, routecode, speed, timestamp, vehicleno) ")
-          .append("VALUES (").append(vehicleInfo.getId())
-          .append(", ").append(vehicleInfo.getCoords().getAccuracy())
-          .append(", ").append(vehicleInfo.getCoords().getAltitude())
-          .append(", ").append(vehicleInfo.getCoords().getHeading())
-          .append(", ").append(vehicleInfo.getCoords().getLatitude())
-          .append(", ").append(vehicleInfo.getCoords().getLongitude())
-          .append(", ").append(vehicleInfo.getMocked())
-          .append(", '").append(vehicleInfo.getRouteCode())
-          .append("', ").append(vehicleInfo.getCoords().getSpeed())
-          .append(", ").append(vehicleInfo.getTimestamp())
-          .append(", '").append(vehicleInfo.getVehicleNo())
-          .append("');");
-     
-        String query = sb.toString();
-        logger.info("Cassandra query: "+query);
-        session.execute(query);
+    	ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+    	try {
+    		logger.info("\n\n\n In cassandra connecter\n\n\n");
+    		JSONObject json1 = new JSONObject(ow.writeValueAsString(vehicleInfo));
+    		String str1 = json1.toString();
+    		StringBuilder sb = new StringBuilder("INSERT INTO ")
+                    .append(cassandraKeySpace).append(".vehicle_info").append(" JSON ")
+                    .append("'")
+                    .append(str1)
+                    .append("';");
+    		String query = sb.toString();
+    		logger.info("\n\n\n###Cassandra insertVehicleInfo query: "+query+"\n\n");
+    	    session.execute(query);
+		} catch (Exception e) {
+			logger.error("Invalid VehicleInfo");
+		}  
     }
+
     
     public List<Test> selectAll() {
         StringBuilder sb = 
@@ -113,9 +114,41 @@ public class CassandraConnector {
 	     
 	     String use = "use WMKeyspace";
 	     
-	     StringBuilder query = new StringBuilder("CREATE TABLE tour_info "
-	     		+ "(id uuid PRIMARY KEY, vehicleNo text, routeCode text, accuracy double, "
-	     		+ "altitude double, heading double, latitude double, longitude double, speed double, mocked boolean, timestamp double)");
+	     StringBuilder queryVehicleInfo = new StringBuilder("CREATE TABLE vehicle_info "
+		     		+ "(id uuid PRIMARY KEY, driverId uuid, vehicleNo text, type text, capacity int, "
+		     		+ "color text, owner text, purchaseDate text, company text, model text, "
+		     		+"code text, tenantId text, createdBy text, createdTime double, lastModifiedBy text, lastModifiedTime double)");
+	     
+	     StringBuilder queryDriverInfo = new StringBuilder("CREATE TABLE driver_info "
+		     		+ "(id uuid PRIMARY KEY, name text, code text, tenantId text, dateOfBirth double, "
+		     		+"phoneNo double, aadhaarNo double, licenseNo double, bloodGroup text, emailId text, "
+		     		+"createdBy text, createdTime double, lastModifiedBy text, lastModifiedTime double)");
+	     
+	     StringBuilder queryCollectonPointInfo = new StringBuilder("CREATE TABLE collectionPoint_info "
+		     		+ "(id uuid PRIMARY KEY, binId uuid, latitude double, longitude double, "
+		     		+"name text, ward text, street text, colony text, "
+		     		+"code text, tenantId text, createdBy text, createdTime double, lastModifiedBy text, lastModifiedTime double)");
+	     
+	     StringBuilder queryDumpingGroundInfo = new StringBuilder("CREATE TABLE dumpingGround_info "
+		     		+ "(id uuid PRIMARY KEY, binId uuid, latitude double, longitude double, "
+		     		+"name text, ward text, street text, colony text, "
+		     		+"code text, tenantId text, createdBy text, createdTime double, lastModifiedBy text, lastModifiedTime double)");
+	     
+
+	     StringBuilder queryRouteInfo = new StringBuilder("CREATE TABLE route_info "
+		     		+ "(id uuid PRIMARY KEY, collectionPointIds list<uuid>, dumpingGroundIds list<uuid>, name text, "
+		     		+"code text, tenantId text, createdBy text, createdTime double, lastModifiedBy text, lastModifiedTime double)");
+	     
+	     StringBuilder queryTripInfo = new StringBuilder("CREATE TABLE trip_info "
+		     		+ "(id uuid PRIMARY KEY, routeId uuid, vehicleId uuid, status text, startTime double, "
+		     		+"endTime double, createdBy text, createdTime double, lastModifiedBy text, lastModifiedTime double)");
+	     
+	     StringBuilder queryTrackInfo = new StringBuilder("CREATE TABLE track_info "
+		     		+ "(id uuid PRIMARY KEY, tripId uuid, timeStamp long, "
+		     		+" latitude double, longitude double,  altitude double, accuracy double, "
+		     		+"altitudeAccuracy double, speed int)");
+	     
+	     
 	        
 	     session.execute(sb.toString());
 	     logger.info("Successfully created key space");
@@ -123,8 +156,27 @@ public class CassandraConnector {
 	     session.execute(use);
 	     logger.info("Using keyspace WMKeyspace");
 
-	     session.execute(query.toString());
-	     logger.info("Successfully created table tour_info");
+	     session.execute(queryVehicleInfo.toString());
+	     logger.info("Successfully created table vehicle_info");
 
+	     session.execute(queryDriverInfo.toString());
+	     logger.info("Successfully created table driver_info");
+
+	     session.execute(queryCollectonPointInfo.toString());
+	     logger.info("Successfully created table collectionPoint_info");
+
+	     session.execute(queryDumpingGroundInfo.toString());
+	     logger.info("Successfully created table dumpingGround_info");
+
+	     session.execute(queryRouteInfo.toString());
+	     logger.info("Successfully created table route_info");
+
+	     session.execute(queryTripInfo.toString());
+	     logger.info("Successfully created table trip_info");
+
+	     session.execute(queryTrackInfo.toString());
+	     logger.info("Successfully created table track_info");
+	     
     }
 }
+

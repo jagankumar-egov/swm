@@ -2,23 +2,58 @@ package org.egov.wm.model;
 
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class VehicleInfo {
 	
 	private UUID id;
+
+	private String company;
+	
+	private String model;
 			
 	private String vehicleNo;
 	
-	private String routeCode;
+	private String type;
+
+	private Integer capacity;
 	
-	private BatteryInfo batteryInfo;
+	private String color;
 	
-	private Coords coords;
+	private String owner;
 	
-	private Boolean mocked;
+	private String purchaseDate;
 	
-	private Long timestamp;
+	private String code;
+	
+	private String tenantId;
+	
+	private UUID driverId;
+	
+	private AuditInfo auditInfo;
+
+	public UUID getId() {
+		return id;
+	}
+
+	public void setId(UUID id) {
+		this.id = id;
+	}
+
+	public String getCompany() {
+		return company;
+	}
+
+	public void setCompany(String company) {
+		this.company = company;
+	}
+
+	public String getModel() {
+		return model;
+	}
+
+	public void setModel(String model) {
+		this.model = model;
+	}
 
 	public String getVehicleNo() {
 		return vehicleNo;
@@ -28,53 +63,77 @@ public class VehicleInfo {
 		this.vehicleNo = vehicleNo;
 	}
 
-	public String getRouteCode() {
-		return routeCode;
+	public String getType() {
+		return type;
 	}
 
-	public void setRouteCode(String routeCode) {
-		this.routeCode = routeCode;
+	public void setType(String type) {
+		this.type = type;
 	}
 
-	public BatteryInfo getBatteryInfo() {
-		return batteryInfo;
+	public Integer getCapacity() {
+		return capacity;
 	}
 
-	public void setBatteryInfo(BatteryInfo batteryInfo) {
-		this.batteryInfo = batteryInfo;
+	public void setCapacity(Integer capacity) {
+		this.capacity = capacity;
 	}
 
-	public Coords getCoords() {
-		return coords;
+	public String getColor() {
+		return color;
 	}
 
-	public void setCoords(Coords coords) {
-		this.coords = coords;
+	public void setColor(String color) {
+		this.color = color;
 	}
 
-	public Boolean getMocked() {
-		return mocked;
+	public String getOwner() {
+		return owner;
 	}
 
-	public void setMocked(Boolean mocked) {
-		this.mocked = mocked;
+	public void setOwner(String owner) {
+		this.owner = owner;
 	}
 
-	public Long getTimestamp() {
-		return timestamp;
+	public String getPurchaseDate() {
+		return purchaseDate;
 	}
 
-	public void setTimestamp(Long timestamp) {
-		this.timestamp = timestamp;
+	public void setPurchaseDate(String purchaseDate) {
+		this.purchaseDate = purchaseDate;
 	}
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+	public String getTenantId() {
+		return tenantId;
+	}
+
+	public void setTenantId(String tenantId) {
+		this.tenantId = tenantId;
+	}
+
+	public UUID getDriverId() {
+		return driverId;
+	}
+
+	public void setDriverId(UUID driverId) {
+		this.driverId = driverId;
+	}
+
+	public AuditInfo getAuditInfo() {
+		return auditInfo;
+	}
+
+	public void setAuditInfo(AuditInfo auditInfo) {
+		this.auditInfo = auditInfo;
+	}
+
 	
-	public UUID getId() {
-		return UUID.randomUUID();
-	}
-
-	public void setId(UUID id) {
-		this.id = id;
-	}
-	
-
 }
