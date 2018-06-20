@@ -1,5 +1,14 @@
 package org.egov.wm.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class AuditInfo {
 	
 	private String createdBy;
@@ -9,37 +18,5 @@ public class AuditInfo {
 	private String lastModifiedBy;
 	
 	private Long lastModifiedTime;
-
-	public String getCreatedBy() {
-		return createdBy;
-	}
-
-	public void setCreatedBy(String createdBy) {
-		this.createdBy = createdBy;
-	}
-	public String getLastModifiedBy() {
-		return lastModifiedBy;
-	}
-
-	public void setLastModifiedBy(String lastModifiedBy) {
-		this.lastModifiedBy = lastModifiedBy;
-	}
-
-	public Long getCreatedTime() {
-		return createdTime;
-	}
-
-	public void setCreatedTime(Long createdTime) {
-		this.createdTime = createdTime;
-	}
-
-	public Long getLastModifiedTime() {
-		return lastModifiedTime;
-	}
-
-	public void setLastModifiedTime(Long lastModifiedTime) {
-		this.lastModifiedTime = lastModifiedTime;
-	}
-
 
 }

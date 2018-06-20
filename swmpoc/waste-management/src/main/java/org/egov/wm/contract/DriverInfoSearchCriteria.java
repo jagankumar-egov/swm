@@ -1,6 +1,10 @@
-package org.egov.wm.model;
+package org.egov.wm.contract;
 
 import java.util.UUID;
+
+import javax.validation.constraints.NotNull;
+
+
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,14 +15,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Track {
+public class DriverInfoSearchCriteria {
 	
 	private UUID id;
+	
+	private String name;
+	
+	private String phoneNo;
+	
+	@NotNull
+	private String tenantId;
 
-	private UUID tripId;
-	
-	private Coords coords;
-	
-	private Long timeStamp;
-	
 }
