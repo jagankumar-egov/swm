@@ -29,7 +29,7 @@ public class DriverInfoController {
 	
 	@PostMapping("_create")
 	@ResponseBody
-	private ResponseEntity<?> create(@RequestBody DriverRequest driverRequest){//ResponseEntity<?>
+	private ResponseEntity<?> create(@RequestBody @Valid DriverRequest driverRequest){//ResponseEntity<?>
 		//driverInfoValidator.validateCreate(driverRequest.getDrivers());
 		DriverResponse response=driverService.create(driverRequest);
 		

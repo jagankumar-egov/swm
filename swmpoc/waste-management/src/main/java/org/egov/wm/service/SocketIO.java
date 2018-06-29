@@ -29,6 +29,9 @@ public class SocketIO {
 	@Autowired
 	private WasteManagementApp wasteManagementApp;
 	
+	@Autowired
+	private SocketClient socketClient;
+	
 	public void pushToSocketIO(String key, String value) throws Exception {    
 		logger.info("Pushing to SocketIO.....");
 		
@@ -43,6 +46,7 @@ public class SocketIO {
 		final Socket socket = wasteManagementApp.getSocket();
 		
 		logger.info("socket: "+socket);
+		logger.info("\n\n conn-status:"+ socket.connected()+"\n\n");
 		
         socket.on(io.socket.client.Socket.EVENT_CONNECT, new Emitter.Listener() {
         @Override
@@ -50,6 +54,7 @@ public class SocketIO {
     		logger.info("EVENT_CONNECT");
             try {
                 socket.emit(socketRoom, value.toString());
+                socketClient.listen();
             } catch (JSONException e) {
             	logger.error("Exception while pushing it to the socket: ",e);
             }
@@ -60,7 +65,13 @@ public class SocketIO {
         @Override
         public void call(Object... args) {
     		logger.info("EVENT_MESSAGE");
-            System.out.println("Message Received: ");
+            try {
+                socket.emit(socketRoom, value.toString());
+            } catch (JSONException e) {
+            	logger.error("Exception while pushing it to the socket: ",e);
+            }
+            socketClient.listen();
+            logger.info("Message Received: ");
             for (int i = 0; i < args.length; i++) {
             	logger.info(args[i].toString());
             }
@@ -94,6 +105,21 @@ public class SocketIO {
         @Override
         public void call(Object... args) {
         	logger.info("Reconnecting: ");
+            for (int i = 0; i < args.length; i++) {
+            	logger.info(args[i].toString());
+            }
+        }
+
+    }).on("new_message", new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+    		logger.info("mesage.event");
+            try {
+                socket.emit(socketRoom, value.toString());
+            } catch (JSONException e) {
+            	logger.error("Exception while pushing it to the socket: ",e);
+            }
+           logger.info("Message Received: ");
             for (int i = 0; i < args.length; i++) {
             	logger.info(args[i].toString());
             }

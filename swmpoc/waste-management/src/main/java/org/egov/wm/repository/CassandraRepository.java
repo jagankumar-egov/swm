@@ -8,12 +8,14 @@ import org.egov.wm.model.CollectionPoint;
 import org.egov.wm.model.DriverInfo;
 import org.egov.wm.model.DumpingGround;
 import org.egov.wm.model.Route;
+import org.egov.wm.model.Track;
 import org.egov.wm.model.Trip;
 import org.egov.wm.model.VehicleInfo;
 import org.egov.wm.repository.builder.CollectionPointBuilder;
 import org.egov.wm.repository.builder.DriverInfoBuilder;
 import org.egov.wm.repository.builder.DumpingGroundBuilder;
 import org.egov.wm.repository.builder.RouteBuilder;
+import org.egov.wm.repository.builder.TrackBuilder;
 import org.egov.wm.repository.builder.TripBuilder;
 import org.egov.wm.repository.builder.VehicleInfoBuilder;
 import org.slf4j.Logger;
@@ -45,6 +47,9 @@ public class CassandraRepository {
 	
 	@Autowired
 	public TripBuilder tripBuilder;
+	
+	@Autowired
+	public TrackBuilder trackBuilder;
 	
 	@Autowired
 	public CassandraConnect cassandraConnect;
@@ -110,4 +115,10 @@ public class CassandraRepository {
 		logger.info("executed query: "+query);
 	}
 
+	public void insertTrackInfo(Track track) {
+		String query=trackBuilder.createQuery(track);
+		Session session=cassandraConnect.getSession();
+		session.execute(query);
+		logger.info("executed query: "+query);
+	}
 }

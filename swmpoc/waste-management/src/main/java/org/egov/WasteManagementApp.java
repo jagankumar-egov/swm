@@ -28,6 +28,8 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
+
 
 @SpringBootApplication
 @Configuration
@@ -89,6 +91,13 @@ public class WasteManagementApp
 	}
 	
 	public Socket getSocket() {
+		socket.on("message.event", new Emitter.Listener() {
+	        @Override
+	        public void call(Object... args) {
+	            logger.info("addedmessage.event");
+	            socket.emit("message.event", args);
+	        }
+	    });
 		return this.socket;
 	}
 }

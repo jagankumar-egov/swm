@@ -59,7 +59,7 @@ public class CassandraConnect {
 	     StringBuilder queryDriverInfo = new StringBuilder("CREATE TABLE IF NOT EXISTS driver_info "
 		     		+ "(id uuid, name text, code text, tenantId text, dateOfBirth double, "
 		     		+"phoneNo double, aadhaarNo double, licenseNo double, bloodGroup text, emailId text, "
-		     		+"createdBy text, createdTime double, lastModifiedBy text, lastModifiedTime double, PRIMARY KEY (id, name, phoneNo, tenantId))");
+		     		+"createdBy text, createdTime double, lastModifiedBy text, lastModifiedTime double, PRIMARY KEY ((id, name, phoneNo, tenantId),emailId))");
 	     
 	     StringBuilder queryVehicleInfo = new StringBuilder("CREATE TABLE IF NOT EXISTS vehicle_info "
 		     		+ "(id uuid PRIMARY KEY, driverId uuid, vehicleNo text, type text, capacity int, "
@@ -87,7 +87,7 @@ public class CassandraConnect {
 	     
 	     StringBuilder queryTrackInfo = new StringBuilder("CREATE TABLE IF NOT EXISTS track_info "
 		     		+ "(id uuid PRIMARY KEY, tripId uuid, timeStamp double, "
-		     		+" latitude double, longitude double,  altitude double, accuracy double, "
+		     		+" latitude double, longitude double,  altitude double, accuracy double, heading int, "
 		     		+"altitudeAccuracy double, speed int)");
 	     
 	     

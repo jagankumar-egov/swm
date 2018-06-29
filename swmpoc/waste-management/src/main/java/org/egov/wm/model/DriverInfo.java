@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @Data
 @AllArgsConstructor
@@ -14,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class DriverInfo {
 
 	private UUID id;
-	
+	@NonNull
 	private String name;
 	
 	private String code;

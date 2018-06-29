@@ -39,8 +39,8 @@ public class Processor{
 	@Autowired
 	private SocketIO socketIO;
 	
-	@Autowired
-	private CassandraConnector cassandraConnector;
+	/*@Autowired
+	private CassandraConnector cassandraConnector;*/
 	
 	@Value("${spring.kafka.bootstrap.servers}")
 	private String bootStrapServer;
@@ -50,6 +50,9 @@ public class Processor{
 	
 	@Value("${kafka.stream.cassandra.topic}")
 	private String kafkaStreamCassandraTopic;
+	
+	@Value("${kafka.stream.socketio.topic}")
+	private String kafkaStreamSocketIOTopic;
 	
 	public static final Logger logger = LoggerFactory.getLogger(Processor.class);
 	
@@ -71,21 +74,22 @@ public class Processor{
         final StreamsBuilder builder = new StreamsBuilder();
  
         KStream<String, String> source = builder.stream(kafkaInStreamTopic);//Topic
-        source.to(kafkaStreamCassandraTopic);//Topic
+        source.to(kafkaStreamCassandraTopic);
+        source.to(kafkaStreamSocketIOTopic);
         
-        source.foreach(new ForeachAction<String, String>() {
+        /*source.foreach(new ForeachAction<String, String>() {
             public void apply(String key, String value) {
-                logger.info("\n\n\n\n processor info\n kafkaStreamCassandraTopic : "+kafkaStreamCassandraTopic+"\n kafkaInStreamTopic: "+kafkaInStreamTopic+ key + ": " + value+"\n\n\n\n");
+                logger.info("\n\n\n\n mykey " +key + "\nmyvalue " + value+"\n\n\n\n");
                 try {
                 	socketIO.pushToSocketIO(key, value);
-                	logger.info("\n\n\n\n$$$ pushing to socket\n\n\n\n");
+                	logger.info("\n\n\n\n$$$ Tpushing to socket\n\n\n\n"+ key+"mykey");
                 }catch(Exception e) {
                 	logger.error("Couldn't post to socketIO: ",e);
-                    transformDataAndPersist(cassandraConnector, value, kafkaInStreamTopic);
+                    //transformDataAndPersist(cassandraConnector, value, kafkaInStreamTopic);
                 }
-                transformDataAndPersist(cassandraConnector, value, kafkaInStreamTopic);
+                //transformDataAndPersist(cassandraConnector, value, kafkaInStreamTopic);
             }
-         });        
+         });   */     
         
         final Topology topology = builder.build();
         final KafkaStreams streams = new KafkaStreams(topology, props);
@@ -97,7 +101,7 @@ public class Processor{
         //cassandraConnector.connect();
     }
     
-    private void transformDataAndPersist(CassandraConnector cassandraConnector, String value, String topic) {
+    /*private void transformDataAndPersist(CassandraConnector cassandraConnector, String value, String topic) {
     	logger.info("Transforming Data...");
     	VehicleInfo vehicleInfo = new VehicleInfo();
     	try {
@@ -112,7 +116,6 @@ public class Processor{
     		logger.error("Couldn't convert to VehicleInfo: ",e);
             cassandraConnector.connect();
             cassandraConnector.insertVehicleInfo(vehicleInfo);
-    	}
-        	
-    }
+    	}   	
+    }*/
 }
