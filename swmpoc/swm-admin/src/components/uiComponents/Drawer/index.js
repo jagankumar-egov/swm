@@ -37,8 +37,12 @@ class ClippedDrawer extends React.Component{
   state={
     toggleDriver : false,
     toggleRoute: false,
+<<<<<<< Updated upstream
     toggleCollPt: false,
     toggleDumpGr: false,
+=======
+    toggleVehicle: false,
+>>>>>>> Stashed changes
   };
   /*handleClick = name => event => {
     console.log("toggle-stat:"+[this.state.name]);
@@ -49,6 +53,11 @@ class ClippedDrawer extends React.Component{
   handleDriverClick = () => {
     this.setState({
       toggleDriver : !this.state.toggleDriver,
+    });
+  };
+  handleVehicleClick = () => {
+    this.setState({
+      toggleVehicle : !this.state.toggleVehicle,
     });
   };
   handleRouteClick = () => {
@@ -98,6 +107,21 @@ class ClippedDrawer extends React.Component{
                 </Link>
               </List>
             </Collapse>
+
+            <ListItem button onClick={this.handleVehicleClick}>
+                <ListItemText  primary="Vehicle" />
+                {this.state.toggleVehicle ? <ExpandLess /> : <ExpandMore />}
+              </ListItem>
+
+            <Collapse in={this.state.toggleVehicle} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  <Link to="/create-vehicle" style={{ textDecoration: 'none' }}>
+                    <ListItem button className={classes.nested}>
+                      <ListItemText  primary="Add new" />
+                    </ListItem>
+                  </Link>
+                </List>
+              </Collapse>
 
             <ListItem button onClick={this.handleRouteClick}>
                 <ListItemText  primary="Route" />
