@@ -1,7 +1,7 @@
 import React from 'react';
 import {Switch, Route} from 'react-router-dom';
 import Tracker from '../components/content/TrackerPage';
-
+import DriverCreate from '../components/content/Driver/Create'
 const base = "";
 
 const Main = () => {
@@ -24,13 +24,7 @@ const Main = () => {
             )
           }}/>
 
-          <Route exact path={base+"/create-driver"} component={()=>{
-            return (
-              <div>
-                  crate driver
-              </div>
-            )
-          }}/>
+          <Route exact path={base+"/create-driver"} component={DriverCreate}/>
         </Switch>
       </main>
      )
