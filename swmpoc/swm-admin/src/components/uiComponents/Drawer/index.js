@@ -37,12 +37,7 @@ class ClippedDrawer extends React.Component{
   state={
     toggleDriver : false,
     toggleRoute: false,
-<<<<<<< Updated upstream
-    toggleCollPt: false,
-    toggleDumpGr: false,
-=======
     toggleVehicle: false,
->>>>>>> Stashed changes
   };
   /*handleClick = name => event => {
     console.log("toggle-stat:"+[this.state.name]);
