@@ -1,8 +1,5 @@
 import React, { Component } from "react";
-import { translate, Trans } from "react-i18next";
 import MapsInfo from "./MapInfo";
-import Page_404 from "../ErrorPages/404";
-import NoInternet from "../ErrorPages/NoInternet";
 import { commonApi } from "../../../utility/api";
 import _ from "lodash";
 import Loader from "../Loader";
@@ -295,8 +292,8 @@ class Tracker extends Component {
         ) : (
           <div
             ref={ref => (this.fCon = ref)}
-            className="flex-container"
-            style={{ overflowY: availWidth >= 767 ? "hidden" : "auto" }}
+            // className="flex-container"
+            // style={{ overflowY: availWidth >= 767 ? "hidden" : "auto" }}
           >
             {appData && <MapsInfo
               {...appData}
@@ -305,13 +302,13 @@ class Tracker extends Component {
             />}
           </div>
         ) : (
-          <Page_404 availWidth={availWidth} />
+          <div/>
         ) : (
-          <NoInternet availWidth={availWidth} />
+          <div />
         )}
       </div>
     );
   }
 }
 
-export default translate("translations")(Tracker);
+export default Tracker;

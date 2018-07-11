@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { translate, Trans } from 'react-i18next';
 import { MapWithDirectionsRenderer } from '../../../uiComponents/maps';
 import _ from 'lodash';
 const moment = require('moment');
@@ -56,4 +55,4 @@ class MapsInfo extends Component {
 	}
 }
 
-export default translate('translations')(MapsInfo);
+export default MapsInfo;

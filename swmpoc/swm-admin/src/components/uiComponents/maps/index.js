@@ -55,7 +55,7 @@ export const MapWithDirectionsRenderer = compose(
   withProps(props=>{
     return {googleMapURL: "https://maps.googleapis.com/maps/api/js?key=AIzaSyBN01pR2wGavj2_q3v4-vFgQzmcx-gllk0&v=3.exp&libraries=geometry,drawing,places",
     loadingElement: <div style={{ height: `100%` }} />,
-    containerElement: <div style={{ height: `100%`, minWidth: `300px` }} />,
+    containerElement: <div style={{ height: `100%`, minWidth: `100%` }} />,
     mapElement: <div style={{ height: `100%` }} />,
     props}
   }),
@@ -80,7 +80,7 @@ export const MapWithDirectionsRenderer = compose(
     },
 
     reRender(props) {
-      if(props.userLocation) {
+      // if(props.userLocation) {
         const DirectionsService = new window.google.maps.DirectionsService();
         bounds = new window.google.maps.LatLngBounds();
         let count = 2; //1: if don't want to show pickup
@@ -143,7 +143,7 @@ export const MapWithDirectionsRenderer = compose(
             }
           });
         }
-      }
+      // }
     }
   })
 )(props => {
@@ -249,7 +249,7 @@ export const MapWithDirectionsRenderer = compose(
           )
         }
 
-        {/*props.showLocationTrail && props.directions && ["COMPLETED", "CANCELLED"].indexOf(props.tripStatus) == -1 && <DirectionsRenderer
+        {props.directions && <DirectionsRenderer
                                 directions={props.directions}
                                 options={{
                                   preserveViewport: true,
@@ -267,7 +267,9 @@ export const MapWithDirectionsRenderer = compose(
                                         repeat: '1px'
                                     }]
                                   }
-                                }}/>*/}
+                                }}/>
+        }
+
         {props.vehicleLocations && props.vehicleLocations.map((marker,markerKey)=>(
           <Marker
           key={markerKey}

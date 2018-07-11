@@ -1,5 +1,4 @@
 import React from 'react';
-import PreLoader from '../../uiComponents/materializecss/PreLoader';
 
 const Loader = () => {
 	return (
@@ -7,6 +6,6 @@ const Loader = () => {
 
 		</div>
 	);
-} 
+}
 
 export default Loader;
