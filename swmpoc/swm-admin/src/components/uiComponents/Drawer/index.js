@@ -37,6 +37,8 @@ class ClippedDrawer extends React.Component{
   state={
     toggleDriver : false,
     toggleRoute: false,
+    toggleCollPt: false,
+    toggleDumpGr: false,
   };
   /*handleClick = name => event => {
     console.log("toggle-stat:"+[this.state.name]);
@@ -52,6 +54,16 @@ class ClippedDrawer extends React.Component{
   handleRouteClick = () => {
     this.setState({
       toggleRoute : !this.state.toggleRoute,
+    });
+  };
+  handleCollPtClick = () => {
+    this.setState({
+      toggleCollPt : !this.state.toggleCollPt,
+    });
+  };
+  handleDumpGrClick = () => {
+    this.setState({
+      toggleDumpGr : !this.state.toggleDumpGr,
     });
   };
 
@@ -71,7 +83,7 @@ class ClippedDrawer extends React.Component{
                 <ListItemText primary="Dashboard" />
               </ListItem>
             </Link>
-            
+
           <ListItem button onClick={this.handleDriverClick}>
               <ListItemText  primary="Driver" />
               {this.state.toggleDriver ? <ExpandLess /> : <ExpandMore />}
@@ -100,11 +112,40 @@ class ClippedDrawer extends React.Component{
                     </ListItem>
                   </Link>
                 </List>
-              </Collapse>
+            </Collapse>
+
+            <ListItem button onClick={this.handleCollPtClick}>
+                <ListItemText  primary="Collection Point" />
+                {this.state.toggleCollPt ? <ExpandLess /> : <ExpandMore />}
+              </ListItem>
+
+            <Collapse in={this.state.toggleCollPt} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  <Link to="/create-collection-point" style={{ textDecoration: 'none' }}>
+                    <ListItem button className={classes.nested}>
+                      <ListItemText  primary="Add new" />
+                    </ListItem>
+                  </Link>
+                </List>
+            </Collapse>
+
+            <ListItem button onClick={this.handleDumpGrClick}>
+                <ListItemText  primary="Dumping Ground" />
+                {this.state.toggleDumpGr ? <ExpandLess /> : <ExpandMore />}
+              </ListItem>
+
+            <Collapse in={this.state.toggleDumpGr} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  <Link to="/create-dumping-ground" style={{ textDecoration: 'none' }}>
+                    <ListItem button className={classes.nested}>
+                      <ListItemText  primary="Add new" />
+                    </ListItem>
+                  </Link>
+                </List>
+            </Collapse>
+
+
          </List>
-
-
-
         </Drawer>
       </div>
     )

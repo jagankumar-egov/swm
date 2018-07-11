@@ -2,6 +2,8 @@ import React from 'react';
 import {Switch, Route} from 'react-router-dom';
 import Tracker from '../components/content/TrackerPage';
 import DriverCreate from '../components/content/Driver/Create'
+import CollectionPointCreate from '../components/content/CollectionPoint/Create'
+import DumpingGroundCreate from '../components/content/DumpingGround/Create'
 const base = "";
 
 const Main = () => {
@@ -25,6 +27,8 @@ const Main = () => {
           }}/>
 
           <Route exact path={base+"/create-driver"} component={DriverCreate}/>
+          <Route exact path={base+"/create-collection-point"} component={CollectionPointCreate}/>
+          <Route exact path={base+"/create-dumping-ground"} component={DumpingGroundCreate}/>
         </Switch>
       </main>
      )
