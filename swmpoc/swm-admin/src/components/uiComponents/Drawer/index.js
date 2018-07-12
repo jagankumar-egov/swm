@@ -38,6 +38,8 @@ class ClippedDrawer extends React.Component{
     toggleDriver : false,
     toggleRoute: false,
     toggleVehicle: false,
+    toggleCollPt: false,
+    toggleDumpGr: false,
   };
   /*handleClick = name => event => {
     console.log("toggle-stat:"+[this.state.name]);
