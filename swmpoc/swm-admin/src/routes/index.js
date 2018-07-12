@@ -13,13 +13,7 @@ const Main = () => {
     return (
       <main style={{"marginBottom": "50px"}}>
         <Switch>
-          <Route exact path={base+"/"} component={()=>{
-            return (
-              <div>
-                  tracking
-              </div>
-            )
-          }}/>
+          <Route exact path={base+"/"} component={Tracker}/>
 
           <Route exact path={base+"/create-driver"} component={DriverCreate}/>
           <Route exact path={base+"/create-collection-point"} component={CollectionPointCreate}/>

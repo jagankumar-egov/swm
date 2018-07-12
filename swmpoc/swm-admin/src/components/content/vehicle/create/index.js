@@ -4,6 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import {commonApi} from '../../../../utility/api';
 
 const styles = theme => ({
   container: {
@@ -42,11 +43,20 @@ handleChange = name => event => {
   });
 };
 
+onSubmit = async(e) =>{
+  let _vehicles=[];
+  _vehicles[0]={...this.state};
+  let epoch=new Date(this.state.purchaseDate).getTime();
+  _vehicles[0]["purchaseDate"]=epoch;
+  let requestBody={};
+  requestBody.vehicles=_vehicles;
+  let response=commonApi("post","/waste-management/v1/vehicle/_create",{},requestBody);
+}
   render() {
     const { classes } = this.props;
 
     return (
-      <form className={classes.container} noValidate autoComplete="off">
+      <form className={classes.container} noValidate autoComplete="off" onSubmit={this.onSubmit}>
         <TextField
           id="company"
           label="Company"
@@ -84,7 +94,7 @@ handleChange = name => event => {
           label="Capacity"
           className={classes.textField}
           value={this.state.capacity}
-          onChange={this.handleChange('company')}
+          onChange={this.handleChange('capacity')}
           margin="normal"
         />
         <TextField
@@ -106,8 +116,12 @@ handleChange = name => event => {
         <TextField
           id="purchaseDate"
           label="Purchase Date"
+          type="date"
           className={classes.textField}
           value={this.state.purchaseDate}
+          InputLabelProps={{
+            shrink: true,
+          }}
           onChange={this.handleChange('purchaseDate')}
           margin="normal"
         />

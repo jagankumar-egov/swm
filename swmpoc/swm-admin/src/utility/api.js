@@ -23,7 +23,7 @@ const requestInfo={
     }
 }
 //mockdata end point will remove in future
-export const commonApi = async(method = "get", context = "/mockdata", queryObject = {}, body = {}) => {
+export const commonApi = async(method = "post", context = "/", queryObject = {}, body = {}) => {
   var url = context;
   url += !_.isEmpty(queryObject) ? '?' : "";
   for (var variable in queryObject) {
