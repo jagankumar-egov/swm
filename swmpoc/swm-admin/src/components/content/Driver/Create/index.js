@@ -4,11 +4,8 @@ import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
-<<<<<<< Updated upstream
 import {commonApi} from '../../../../utility/api';
-=======
-import {commonApi} from "../../../../utility/api";
->>>>>>> Stashed changes
+
 
 const styles = theme => ({
   container: {
@@ -46,7 +43,7 @@ class DriverCreate extends React.Component {
     });
   };
 
-<<<<<<< Updated upstream
+
   onSubmit = async(e) =>{
     let _drivers=[];
     _drivers[0]={...this.state};
@@ -54,15 +51,7 @@ class DriverCreate extends React.Component {
     _drivers[0]["dateOfBirth"]=epoch;
     let requestBody={};
     requestBody.drivers=_drivers;
-    let response=commonApi("post","/waste-management/v1/driver/_create",{},requestBody);
-=======
-  onSubmit=async (e)=>{
-    let drivers=[];
-    drivers[0]={...this.state};
-    let epoch=new Date(this.state.dateOfBirth).getTime();
-    drivers[0]["dateOfBirth"]=epoch;
-    let response=await commonApi("post","/waste-management/v1/driver/_create",{},{drivers});
->>>>>>> Stashed changes
+    let response=await commonApi("post","/waste-management/v1/driver/_create",{},requestBody);
   }
 
   render() {
