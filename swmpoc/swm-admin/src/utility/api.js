@@ -7,9 +7,24 @@ var instance = axios.create({
     'Content-Type': 'application/json',
   },
 });
+const requestInfo={
+    "apiId": "apiId",
+    "ver": "version",
+    "action": "action",
+    "did": "did",
+    "key": "key",
+    "msgId": "msgId",
+    "requesterId": "requestId",
+    "authToken": "9b5306f2-b3c5-4d22-b146-bfee7513cffa",
+    "userInfo": {
+      "type": "SYSTEM",
+      "name": "kiran",
+      "id": 32
+    }
+}
 
 //mockdata end point will remove in future
-export const commonApi = async(method = "get", context = "/mockdata", queryObject = {}, body = {}) => {
+export const commonApi = async(method = "get", context = "/mockdata", queryObject = {}, requestBody = {}) => {
   var url = context;
   url += !_.isEmpty(queryObject) ? '?' : "";
   for (var variable in queryObject) {
@@ -26,7 +41,11 @@ export const commonApi = async(method = "get", context = "/mockdata", queryObjec
       }
     case "post":
       try {
-        return await instance.post(url, body);
+        return await instance.post(
+          url,
+          {requestInfo,
+          ...requestBody}
+        );
       } catch (e) {
         throw new Error(e);
       }

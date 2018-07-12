@@ -4,6 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import {commonApi} from '../../../../utility/api';
 
 const styles = theme => ({
   container: {
@@ -41,11 +42,22 @@ class DriverCreate extends React.Component {
     });
   };
 
+  onSubmit = async(e) =>{
+    let _drivers=[];
+    _drivers[0]={...this.state};
+    let epoch=new Date(this.state.dateOfBirth).getTime();
+    _drivers[0]["dateOfBirth"]=epoch;
+    let requestBody={};
+    requestBody.drivers=_drivers;
+    let response=commonApi("post","/waste-management/v1/driver/_create",{},requestBody);
+
+  }
+
   render() {
     const { classes } = this.props;
 
     return (
-      <form className={classes.container} noValidate autoComplete="off">
+      <form className={classes.container} noValidate autoComplete="off" onSubmit={this.onSubmit}>
         <TextField
           id="name"
           label="Name"
@@ -67,7 +79,7 @@ class DriverCreate extends React.Component {
           label="Tenant Id"
           className={classes.textField}
           value={this.state.tenantId}
-          onChange={this.handleChange('value')}
+          onChange={this.handleChange('tenantId')}
           margin="normal"
         />
         <TextField
