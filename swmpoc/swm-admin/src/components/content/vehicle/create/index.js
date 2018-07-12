@@ -21,7 +21,7 @@ const styles = theme => ({
  },
 });
 
-class TextFields extends React.Component {
+class VehicleCreate extends React.Component {
   state = {
   	company:'',
     model:'',
@@ -133,7 +133,6 @@ handleChange = name => event => {
           className={classes.textField}
           value={this.state.driverId}
           onChange={this.handleChange('driverId')}
-          fullWidth
           margin="normal"
         />
         <Button type="submit" variant="contained" color="secondary" className={classes.button}>
@@ -147,8 +146,8 @@ handleChange = name => event => {
 
 
 
-TextFields.propTypes = {
+VehicleCreate.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(TextFields);
+export default withStyles(styles)(VehicleCreate);

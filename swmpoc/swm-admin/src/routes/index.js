@@ -5,6 +5,8 @@ import DriverCreate from '../components/content/Driver/Create'
 import CollectionPointCreate from '../components/content/CollectionPoint/Create'
 import DumpingGroundCreate from '../components/content/DumpingGround/Create'
 import VehicleCreate from '../components/content/vehicle/create';
+import RouteCreate from '../components/content/route/create';
+
 const base = "";
 
 const Main = () => {
@@ -19,18 +21,11 @@ const Main = () => {
             )
           }}/>
 
-          <Route exact path={base+"/create-router"} component={()=>{
-            return (
-              <div>
-                  crate routes
-              </div>
-            )
-          }}/>
-
           <Route exact path={base+"/create-driver"} component={DriverCreate}/>
           <Route exact path={base+"/create-collection-point"} component={CollectionPointCreate}/>
           <Route exact path={base+"/create-dumping-ground"} component={DumpingGroundCreate}/>
           <Route exact path={base+"/create-vehicle"} component={VehicleCreate}/>
+          <Route exact path={base+"/create-route"} component={RouteCreate}/>
 
         </Switch>
       </main>

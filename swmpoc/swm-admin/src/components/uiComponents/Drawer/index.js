@@ -72,6 +72,11 @@ class ClippedDrawer extends React.Component{
       toggleDumpGr : !this.state.toggleDumpGr,
     });
   };
+  handleDumpGrClick = () => {
+    this.setState({
+      toggleDumpGr : !this.state.toggleDumpGr,
+    });
+  };
 
   render() {
     const { classes } = this.props;
@@ -127,7 +132,7 @@ class ClippedDrawer extends React.Component{
 
             <Collapse in={this.state.toggleRoute} timeout="auto" unmountOnExit>
                 <List component="div" disablePadding>
-                  <Link to="/create-router" style={{ textDecoration: 'none' }}>
+                  <Link to="/create-route" style={{ textDecoration: 'none' }}>
                     <ListItem button className={classes.nested}>
                       <ListItemText  primary="Add new" />
                     </ListItem>
