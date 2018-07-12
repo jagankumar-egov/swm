@@ -23,7 +23,6 @@ public class DriverInfoSearchCriteria {
 	
 	private String phoneNo;
 	
-	@NotNull
 	private String tenantId;
 
 }

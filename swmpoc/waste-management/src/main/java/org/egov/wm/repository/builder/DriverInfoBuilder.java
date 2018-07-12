@@ -49,16 +49,16 @@ public class DriverInfoBuilder {
 		String query = new String();
 		try {	
 			StringBuilder querySb=new StringBuilder("SELECT JSON * FROM ")
-					 .append(cassandraKeySpace).append(".driver_info WHERE ");
-			if (criteria.getName()!=null)
-				querySb.append("name='").append(criteria.getName()).append("' AND ");
+					 .append(cassandraKeySpace).append(".driver_info ");
 			if (criteria.getId()!=null)
-				querySb.append("id=").append(criteria.getId()).append(" AND ");
-			if(criteria.getPhoneNo()!=null)
-				querySb.append("phoneNo='").append(criteria.getPhoneNo()).append("' AND ");
-			querySb.append("tenantId='").append(criteria.getTenantId()).append("'")
-					 .append(" ALLOW FILTERING;");
-			
+				querySb.append("WHERE id=").append(criteria.getId());
+			//if(criteria.getPhoneNo()!=null)
+				//querySb.append("AND phoneNo='").append(criteria.getPhoneNo()).append("' AND ");
+			//if (criteria.getName()!=null)
+				//querySb.append("name='").append(criteria.getName()).append("' AND ");
+			//querySb.append("tenantId='").append(criteria.getTenantId()).append("'")
+			//		 .append(" ALLOW FILTERING;");
+			querySb.append(";");
 			query = querySb.toString();
 			logger.info("\n\nquery:\n"+query+"\n\n");
 		}catch(Exception e) {

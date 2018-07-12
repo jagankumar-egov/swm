@@ -22,15 +22,18 @@ const requestInfo={
       "id": 32
     }
 }
-
 //mockdata end point will remove in future
-export const commonApi = async(method = "get", context = "/mockdata", queryObject = {}, requestBody = {}) => {
+export const commonApi = async(method = "get", context = "/mockdata", queryObject = {}, body = {}) => {
   var url = context;
   url += !_.isEmpty(queryObject) ? '?' : "";
   for (var variable in queryObject) {
     if (typeof queryObject[variable] !== 'undefined') {
       url += '&' + variable + '=' + queryObject[variable];
     }
+  }
+  body={
+    requestInfo,
+    ...body
   }
   switch (method) {
     case "get":
@@ -43,8 +46,7 @@ export const commonApi = async(method = "get", context = "/mockdata", queryObjec
       try {
         return await instance.post(
           url,
-          {requestInfo,
-          ...requestBody}
+          body
         );
       } catch (e) {
         throw new Error(e);

@@ -57,9 +57,9 @@ public class CassandraConnect {
 	     String use = "use WMKeyspace";
 	     
 	     StringBuilder queryDriverInfo = new StringBuilder("CREATE TABLE IF NOT EXISTS driver_info "
-		     		+ "(id uuid, name text, code text, tenantId text, dateOfBirth double, "
+		     		+ "(id uuid PRIMARY KEY, name text, code text, tenantId text, dateOfBirth double, "
 		     		+"phoneNo double, aadhaarNo double, licenseNo double, bloodGroup text, emailId text, "
-		     		+"createdBy text, createdTime double, lastModifiedBy text, lastModifiedTime double, PRIMARY KEY ((id, name, phoneNo, tenantId),emailId))");
+		     		+"createdBy text, createdTime double, lastModifiedBy text, lastModifiedTime double)");
 	     
 	     StringBuilder queryVehicleInfo = new StringBuilder("CREATE TABLE IF NOT EXISTS vehicle_info "
 		     		+ "(id uuid PRIMARY KEY, driverId uuid, vehicleNo text, type text, capacity int, "

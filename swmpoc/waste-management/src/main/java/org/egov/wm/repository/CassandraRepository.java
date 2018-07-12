@@ -90,7 +90,8 @@ public class CassandraRepository {
 		String query=driverInfoBuilder.createDriverInfoSearchQuery(driverInfoSearchCriteria);
 		Session session=cassandraConnect.getSession();
 		ResultSet rs=session.execute(query);
-		logger.info("Resultset: "+mapper.convertValue(rs, DriverResponse.class));
+		logger.info("Resultset: "+rs.toString());
+		//logger.info("Resultset: "+mapper.convertValue(rs, DriverResponse.class));
 	}
 	
 	public void getVehicleInfo(VehicleInfoSearchCriteria vehicleInfoSearchCriteria) {
@@ -98,7 +99,8 @@ public class CassandraRepository {
 		String query=vehicleInfoBuilder.createVehicleInfoSearchQuery(vehicleInfoSearchCriteria);
 		Session session=cassandraConnect.getSession();
 		ResultSet rs=session.execute(query);
-		logger.info("Resultset: "+mapper.convertValue(rs, DriverResponse.class));
+		logger.info("Resultset: "+rs.toString());
+		//mapper.convertValue(rs, DriverResponse.class)
 	}
 	
 	public void insertCollectionPoint(CollectionPoint collectionPoint) {
