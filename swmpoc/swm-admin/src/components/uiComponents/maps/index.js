@@ -201,7 +201,7 @@ export const MapWithDirectionsRenderer = compose(
           })
         }
 
-        {props.routes && props.routes.map((route,routeKey)=>
+        {/*props.routes && props.routes.map((route,routeKey)=>
           {
             let options={strokeColor: 'red',strokeWeight: 3}
             let collectionPoints=route.collectionPoints.map((collectionPoint)=>
@@ -219,7 +219,7 @@ export const MapWithDirectionsRenderer = compose(
 
             return (<Polyline key={routeKey} path={[...collectionPoints,{lat:route.dumpingGround.latitude,lng:route.dumpingGround.longitude}]} options={options}/>)
           })
-        }
+      */  }
 
 
 
