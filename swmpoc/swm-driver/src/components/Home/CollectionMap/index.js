@@ -6,7 +6,7 @@ import { commonApi } from "../../../utility/api";
 import collectionPoint from '../../../../assets/garbage-pickup.png';
 import truck from '../../../../assets/truck.png';
 // import { Button } from 'react-native-elements';
-var BatteryManager = require('NativeModules').BatteryManager;
+// var BatteryManager = require('NativeModules').BatteryManager;
 
 var timerObject;
 
@@ -57,14 +57,15 @@ export default class CollectionMap extends React.Component {
 
   _getLocationAsync = async () => {
     let { _updateLocation } = this;
-    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    let obj = await Permissions&& Permissions.askAsync(Permissions.LOCATION);
+    let {status}=obj||{};
     if (status !== "granted") {
       this.setState({
         errorMessage: "Permission to access location was denied"
       });
     }
 
-    let location = await Location.getCurrentPositionAsync({});
+    let location = await Location&&Location.getCurrentPositionAsync({}) || {};
     // console.log(location);
     this.setState({ location });
     _updateLocation(location);

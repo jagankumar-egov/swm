@@ -1,19 +1,18 @@
 {
+  "name": "MyReactNative",
+  "displayName": "MyReactNative",
   "expo": {
-    "name": "swm-driver",
-    "description": "This project is really great.",
-    "slug": "swm-driver",
-    "privacy": "public",
-    "sdkVersion": "25.0.0",
-    "platforms": ["ios", "android"],
+    "name": "MyReactNative",
+    "slug": "MyReactNative",
     "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
